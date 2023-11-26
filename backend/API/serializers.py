@@ -1,5 +1,6 @@
 from .models import Product
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 
 # This is the serializer for the products model
@@ -39,7 +40,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
 # This serializer will handle the serialization for creating a new product
 class ProductCreateUpdateSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(max_length=200, validators=[])
+    title = serializers.CharField(max_length=200, validators=[UniqueValidator(queryset=Product.objects.all())])
 
     class Meta:
         model = Product
