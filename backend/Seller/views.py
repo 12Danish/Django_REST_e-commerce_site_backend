@@ -1,8 +1,6 @@
 from rest_framework import generics
-from rest_framework import generics
-from API.mixins import ProductQuerySetMixin
-from .serializers import BuyerProductSerializer
+from API.serializers import ProductListSerializer
 
 
-class SellerProductListView(ProductQuerySetMixin,generics.ListAPIView):
-    serializer_class = BuyerProductSerializer
+class SellerProductListView(generics.ListAPIView):
+    serializer_class = ProductListSerializer
