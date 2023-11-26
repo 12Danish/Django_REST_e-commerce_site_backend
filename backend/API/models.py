@@ -19,8 +19,8 @@ class Product(models.Model):
     @property
     def sale_price(self):
         if self.discount:
-            return "%.2f" % (float(self.price) * float(self.discount) / 10)
-        else :
+            return "%.2f" % (float(self.price) - (float(self.price) * float(self.discount) / 10))
+        else:
             return self.price
 
     # The property for calculating whether a product is a popular one or not

@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 # This is the serializer for the products model
 class ProductListSerializer(serializers.ModelSerializer):
+    # Defining this attribute which will produce the url for the detail view
     detail_url = serializers.SerializerMethodField
 
     class Meta:
@@ -20,7 +21,8 @@ class ProductListSerializer(serializers.ModelSerializer):
         pass
 
 
-class ProductRetrieveSerializer(serializers.ModelSerializer):
+# This serializer will handle serialization for the Detail View
+class ProductDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
 
@@ -32,5 +34,19 @@ class ProductRetrieveSerializer(serializers.ModelSerializer):
         'owner',
         'description',
         'date_created',
-
     ]
+
+
+# This serializer will handle the serialization for creating a new product
+class ProductCreateUpdateSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(max_length=200, validators=[])
+
+    class Meta:
+        model = Product
+
+        fields = [
+            'title',
+            'price',
+            'description',
+            'discount',
+        ]
