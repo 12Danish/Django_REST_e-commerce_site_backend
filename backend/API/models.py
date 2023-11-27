@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 # This is the model for all of my products
@@ -8,9 +9,11 @@ class Product(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
     title = models.CharField(max_length=200, default="Title")
     category = models.CharField(max_length=200, default="other")
+    image = models.ImageField(upload_to="",
+                              default="C:/Users/Sheryar/PycharmProjects/construction_site/frontend/src/assets/images/sample_product.jpg")
     description = models.TextField(blank=True, null=True)
     price = models.DecimalField(decimal_places=2, max_digits=8, default=0)
-    n_bought = models.IntegerField(default=0)
+    n_bought = models.PositiveIntegerField( default=0)
     discount = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     date_created = models.DateTimeField(auto_created=True, default=datetime.now)
     reviews = models.ManyToManyField('Review', related_name='review', blank=True)
@@ -19,7 +22,7 @@ class Product(models.Model):
     @property
     def sale_price(self):
         if self.discount:
-            return "%.2f" % (float(self.price) - (float(self.price) * float(self.discount) / 10))
+            return "%.2f" % (float(self.price) - (float(self.price) * float(self.discount) / 100))
         else:
             return self.price
 
@@ -39,6 +42,7 @@ class Product(models.Model):
 # This is the model which will have all the reviews of different products by different users
 class Review(models.Model):
     reviewer = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    stars = models.PositiveIntegerField(default=0)
     product = models.ForeignKey(Product, related_name="product", on_delete=models.CASCADE)
     body = models.TextField(null=True, blank=True)
 
