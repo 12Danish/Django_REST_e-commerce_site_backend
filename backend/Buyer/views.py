@@ -1,10 +1,11 @@
 from rest_framework import generics
-from API.serializers import ProductListSerializer
+from API.product_serializers import ProductListSerializer, ProductDetailSerializer
 from API.models import Product
 from datetime import timedelta
 from django.utils import timezone
 
 
+# A simple function to display only the appropriate products within a time field
 def one_month_ago():
     time = timezone.now() - timedelta(days=30)
     return time
@@ -29,5 +30,8 @@ class BuyerProductListView(generics.ListAPIView):
         return qs
 
 
+# This view is responsible for retrieving the desired product
 class BuyerProductRetrieveView(generics.RetrieveAPIView):
-    pass
+    serializer_class = ProductDetailSerializer
+    queryset = Product.objects.all()
+    lookup_field = "pk"

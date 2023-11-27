@@ -13,12 +13,18 @@ class Product(models.Model):
                               default="C:/Users/Sheryar/PycharmProjects/construction_site/frontend/src/assets/images/sample_product.jpg")
     description = models.TextField(blank=True, null=True)
     price = models.DecimalField(decimal_places=2, max_digits=8, default=0)
-    n_bought = models.PositiveIntegerField( default=0)
+    n_bought = models.PositiveIntegerField(default=0)
     discount = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     date_created = models.DateTimeField(auto_created=True, default=datetime.now)
     reviews = models.ManyToManyField('Review', related_name='review', blank=True)
 
-    # The property for sale_price
+    @property
+    def sale_item(self):
+        if self.discount:
+            return True
+        return False
+        # The property for sale_price
+
     @property
     def sale_price(self):
         if self.discount:

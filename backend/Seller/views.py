@@ -1,12 +1,15 @@
 from rest_framework import generics
-from API.serializers import ProductListSerializer, ProductCreateUpdateSerializer
-from API.mixins import AuthenticationMixin
+from API.product_serializers import ProductListSerializer, ProductCreateSerializer, ProductDetailSerializer
+from API.mixins import SellerAuthenticationMixin, SellerPermissionMixin
 from API.models import Product
+
+'''
+The seller has to be authenticated in order to access the seller views
+'''
 
 
 # Defining the List View for the seller
-# The seller has to be authenticated in order to access this
-class SellerProductListView(AuthenticationMixin, generics.ListAPIView):
+class SellerProductListView(SellerAuthenticationMixin, SellerPermissionMixin, generics.ListAPIView):
     serializer_class = ProductListSerializer
 
     # Getting the queryset
@@ -18,13 +21,17 @@ class SellerProductListView(AuthenticationMixin, generics.ListAPIView):
         return Product.objects.none()
 
 
-class SellerProductCreateView(AuthenticationMixin, generics.CreateAPIView):
-    serializer_class = ProductCreateUpdateSerializer
+# This is the view for creating a product
+class SellerProductCreateView(SellerAuthenticationMixin, SellerPermissionMixin, generics.CreateAPIView):
+    serializer_class = ProductCreateSerializer
     queryset = Product.objects.all()
 
     def perform_create(self, serializer):
         return serializer.save(owner=self.request.user)
 
 
-class SellerProductRUDView(generics.RetrieveUpdateDestroyAPIView):
-    pass
+# This view handles the logic for retrieving, updating and deleting products
+class SellerProductRUDView(generics.RetrieveUpdateDestroyAPIView, SellerAuthenticationMixin, SellerPermissionMixin, ):
+    serializer_class = ProductDetailSerializer
+    queryset = Product.objects.all()
+    lookup_field = "pk"
