@@ -1,7 +1,7 @@
 from rest_framework.permissions import DjangoModelPermissions
 
 
-# It is necesary to be a seller to have permssion to the seller views
+# It is necessary to be a seller to have permssion to the seller views
 class IsSellerPermission(DjangoModelPermissions):
     perms_map = {
         'GET': ['%(app_label)s.view_%(model_name)s'],
@@ -14,5 +14,15 @@ class IsSellerPermission(DjangoModelPermissions):
     }
 
     def has_permission(self, request, view):
-        if not request.user.groups.filter(name='seller').exists():
-            return False
+        if request.user.groups.filter(name='seller').exists():
+            return True
+        return False
+
+    # Checking if the user is signed in as a buyer
+
+
+class IsBuyerPermission(DjangoModelPermissions):
+    def has_permission(self, request, view):
+        if request.user.groups.filter(name='buyer').exists():
+            return True
+        return False

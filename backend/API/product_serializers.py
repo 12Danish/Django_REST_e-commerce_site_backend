@@ -38,7 +38,7 @@ class ProductListSerializer(serializers.ModelSerializer):
 # This serializer will handle serialization for the Detail View
 class ProductDetailSerializer(serializers.ModelSerializer):
     popular = serializers.BooleanField(read_only=True)
-    reviews = ReviewSerializer(many=True, read_only=True)
+    reviews = serializers.SerializerMethodField(read_only=True)
     seller = PublicUserSerializer(source="owner", read_only=True)
     date_created = serializers.SerializerMethodField(read_only=True)
 
@@ -59,6 +59,11 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
     def get_date_created(self, obj):
         return obj.date_created.strftime("%Y-%m-%d")
+
+    def get_reviews(self, obj):
+        reviews = obj.review.all()
+        serialized_reviews = ReviewSerializer(reviews, many=True).data
+        return serialized_reviews
 
 
 # This serializer will handle the serialization for creating a new product

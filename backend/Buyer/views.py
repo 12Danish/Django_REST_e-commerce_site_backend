@@ -1,6 +1,8 @@
 from rest_framework import generics
 from API.product_serializers import ProductListSerializer, ProductDetailSerializer
-from API.models import Product
+from API.mixins import BuyerPermissionMixin
+from API.review_serializers import ReviewSerializer
+from API.models import Product, Review
 from datetime import timedelta
 from django.utils import timezone
 
@@ -35,3 +37,15 @@ class BuyerProductRetrieveView(generics.RetrieveAPIView):
     serializer_class = ProductDetailSerializer
     queryset = Product.objects.all()
     lookup_field = "pk"
+
+
+class BuyerPostReviewView(BuyerPermissionMixin, generics.CreateAPIView):
+    serializer_class = ReviewSerializer
+    queryset = Review.objects.all()
+
+    def get_serializer_context(self):
+        # Include product_id in the serializer context
+        context = super().get_serializer_context()
+        context['product_id'] = self.kwargs.get('pk')
+        return context
+

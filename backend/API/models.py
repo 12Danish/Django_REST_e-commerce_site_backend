@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 # This is the model for all of my products
@@ -16,7 +15,6 @@ class Product(models.Model):
     n_bought = models.PositiveIntegerField(default=0)
     discount = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     date_created = models.DateTimeField(auto_created=True, default=datetime.now)
-    reviews = models.ManyToManyField('Review', related_name='review', blank=True)
 
     @property
     def sale_item(self):
@@ -47,9 +45,10 @@ class Product(models.Model):
 
 # This is the model which will have all the reviews of different products by different users
 class Review(models.Model):
-    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    reviewer = models.ForeignKey(User,on_delete=models.CASCADE, default=1)
+    name = models.CharField(max_length=100, default="random")
     stars = models.PositiveIntegerField(default=0)
-    product = models.ForeignKey(Product, related_name="product", on_delete=models.CASCADE)
+    product = models.ForeignKey('Product', related_name="review", on_delete=models.CASCADE)
     body = models.TextField(null=True, blank=True)
 
     def __str__(self):

@@ -1,6 +1,6 @@
 from rest_framework import generics
 from API.product_serializers import ProductListSerializer, ProductCreateSerializer, ProductDetailSerializer
-from API.mixins import SellerAuthenticationMixin, SellerPermissionMixin
+from API.mixins import AuthenticationMixin, SellerPermissionMixin
 from API.models import Product
 
 '''
@@ -9,7 +9,7 @@ The seller has to be authenticated in order to access the seller views
 
 
 # Defining the List View for the seller
-class SellerProductListView(SellerAuthenticationMixin, SellerPermissionMixin, generics.ListAPIView):
+class SellerProductListView(AuthenticationMixin, SellerPermissionMixin, generics.ListAPIView):
     serializer_class = ProductListSerializer
 
     # Getting the queryset
@@ -22,7 +22,7 @@ class SellerProductListView(SellerAuthenticationMixin, SellerPermissionMixin, ge
 
 
 # This is the view for creating a product
-class SellerProductCreateView(SellerAuthenticationMixin, SellerPermissionMixin, generics.CreateAPIView):
+class SellerProductCreateView(AuthenticationMixin, SellerPermissionMixin, generics.CreateAPIView):
     serializer_class = ProductCreateSerializer
     queryset = Product.objects.all()
 
@@ -31,7 +31,8 @@ class SellerProductCreateView(SellerAuthenticationMixin, SellerPermissionMixin, 
 
 
 # This view handles the logic for retrieving, updating and deleting products
-class SellerProductRUDView(generics.RetrieveUpdateDestroyAPIView, SellerAuthenticationMixin, SellerPermissionMixin, ):
+class SellerProductRUDView(generics.RetrieveUpdateDestroyAPIView, AuthenticationMixin, SellerPermissionMixin):
     serializer_class = ProductDetailSerializer
     queryset = Product.objects.all()
     lookup_field = "pk"
+
