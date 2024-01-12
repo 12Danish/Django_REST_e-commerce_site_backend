@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .models import Review
 
 
-
 # This serializer is used to serialize the reviews
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
