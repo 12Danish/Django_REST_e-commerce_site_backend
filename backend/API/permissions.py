@@ -1,8 +1,12 @@
 from rest_framework.permissions import DjangoModelPermissions
 
 
-# It is necessary to be a seller to have permssion to the seller views
 class IsSellerPermission(DjangoModelPermissions):
+    '''
+        This class inherits the djangoModelPermission in order to add custom view permission for the seller
+        Also it looks for the seller group within created user
+        '''
+
     perms_map = {
         'GET': ['%(app_label)s.view_%(model_name)s'],
         'OPTIONS': [],
@@ -22,6 +26,12 @@ class IsSellerPermission(DjangoModelPermissions):
 
 
 class IsBuyerPermission(DjangoModelPermissions):
+    '''
+           This class inherits the DjangoModelPermission in order to add custom permission for the buyer
+           Also it looks for the buyer group within created user. Primarily being used to handle the logic
+           of posting reviews from the buyer
+           '''
+
     def has_permission(self, request, view):
         if request.user.groups.filter(name='buyer').exists():
             return True

@@ -6,8 +6,12 @@ from .review_serializers import ReviewSerializer
 from .user_serializers import PublicUserSerializer
 
 
-# This is the serializer for the products model
+
 class ProductListSerializer(serializers.ModelSerializer):
+    '''
+     This is the serializer for the products model which is being used for listing data
+    '''
+
     # Defining this attribute which will produce the url for the detail view
     detail_url = serializers.SerializerMethodField(read_only=True)
 
@@ -37,6 +41,12 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 # This serializer will handle serialization for the Detail View
 class ProductDetailSerializer(serializers.ModelSerializer):
+    '''
+         This is the serializer for the products model which is being used for displaying dtailed data
+         for a particular product
+
+        '''
+
     popular = serializers.BooleanField(read_only=True)
     reviews = serializers.SerializerMethodField(read_only=True)
     seller = PublicUserSerializer(source="owner", read_only=True)
@@ -68,6 +78,11 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
 # This serializer will handle the serialization for creating a new product
 class ProductCreateSerializer(serializers.ModelSerializer):
+    '''
+        This serializer is primarily being used for converting the data of the new product entered
+        by the seller and saving it to the database
+        '''
+
     # Having a validator to ensure that each product name is unique
     title = serializers.CharField(max_length=200, validators=[UniqueValidator(queryset=Product.objects.all())])
 

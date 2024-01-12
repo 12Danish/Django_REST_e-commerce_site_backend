@@ -7,6 +7,7 @@ from datetime import timedelta
 import logging
 from django.utils import timezone
 
+# Configuring the django logging to log even the basic things
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class BuyerProductListView(generics.ListAPIView):
+    '''
+    This view is handling listing out the products for the buyer.
+    By default it only returns the popular products unless specifed otherwise
+    '''
     serializer_class = ProductListSerializer
+
     # This will define the queryset for the display for the buyer
     def get_queryset(self):
         # Getting all the objects from the
@@ -46,6 +52,11 @@ class BuyerProductRetrieveView(generics.RetrieveAPIView):
 
 
 class BuyerPostReviewView(BuyerPermissionMixin, generics.CreateAPIView):
+    '''
+    This vieww is responsible for saving the review posted by the buyer to the review model.
+    It requires permission as defined in the BuyerPermissionMixin.
+    It is adding the id of the product to the context for the serializer
+    '''
     serializer_class = ReviewSerializer
     queryset = Review.objects.all()
 
@@ -54,3 +65,15 @@ class BuyerPostReviewView(BuyerPermissionMixin, generics.CreateAPIView):
         context = super().get_serializer_context()
         context['product_id'] = self.kwargs.get('pk')
         return context
+
+
+class BuyerAddCartItemView(generics.CreateAPIView):
+    pass
+
+
+class BuyerDeleteCartItemView(generics.DestroyAPIView):
+    pass
+
+
+class CheckoutView:
+    pass

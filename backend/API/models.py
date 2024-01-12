@@ -5,6 +5,9 @@ from datetime import datetime
 
 # This is the model for all of my products
 class Product(models.Model):
+    '''
+           Main Product model having all the data of the products added by different sellers
+           '''
     owner = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
     title = models.CharField(max_length=200, default="Title")
     category = models.CharField(max_length=200, default="other")
@@ -45,6 +48,9 @@ class Product(models.Model):
 
 # This is the model which will have all the reviews of different products by different users
 class Review(models.Model):
+    '''
+               Main Reviews  model having all the data of the reviews  added by different buyers
+               '''
     reviewer = models.ForeignKey(User,on_delete=models.CASCADE, default=1)
     name = models.CharField(max_length=100, default="random")
     stars = models.PositiveIntegerField(default=0)

@@ -2,8 +2,12 @@ from rest_framework import serializers
 from .models import Review
 
 
-# This serializer is used to serialize the reviews
 class ReviewSerializer(serializers.ModelSerializer):
+    '''
+           This class inherits the ModelSerializer  and is used to serialize review data both while saving to the db
+           and displaying the reviews
+           '''
+
     class Meta:
         model = Review
         fields = [
