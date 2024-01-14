@@ -6,7 +6,6 @@ from .review_serializers import ReviewSerializer
 from .user_serializers import PublicUserSerializer
 
 
-
 class ProductListSerializer(serializers.ModelSerializer):
     '''
      This is the serializer for the products model which is being used for listing data
@@ -14,10 +13,12 @@ class ProductListSerializer(serializers.ModelSerializer):
 
     # Defining this attribute which will produce the url for the detail view
     detail_url = serializers.SerializerMethodField(read_only=True)
+    id = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Product
         fields = [
+            'id',
             'title',
             'price',
             'sale_item',

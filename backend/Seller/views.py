@@ -33,6 +33,7 @@ class SellerProductCreateView(AuthenticationMixin, SellerPermissionMixin, generi
 # This view handles the logic for retrieving, updating and deleting products
 class SellerProductRUDView(generics.RetrieveUpdateDestroyAPIView, AuthenticationMixin, SellerPermissionMixin):
     serializer_class = ProductDetailSerializer
-    queryset = Product.objects.all()
     lookup_field = "pk"
 
+    def get_queryset(self):
+        return Product.objects.filter(owner=self.request.user)
