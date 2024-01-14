@@ -1,8 +1,12 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from API.product_serializers import ProductListSerializer, ProductDetailSerializer
 from API.mixins import BuyerPermissionMixin
 from API.review_serializers import ReviewSerializer
 from API.models import Product, Review
+from rest_framework.response import Response
+
+from .models import Cart
+from .serializers import BuyerProductSerializer
 from datetime import timedelta
 import logging
 from django.utils import timezone
@@ -53,7 +57,7 @@ class BuyerProductRetrieveView(generics.RetrieveAPIView):
 
 class BuyerPostReviewView(BuyerPermissionMixin, generics.CreateAPIView):
     '''
-    This vieww is responsible for saving the review posted by the buyer to the review model.
+    This view is responsible for saving the review posted by the buyer to the review model.
     It requires permission as defined in the BuyerPermissionMixin.
     It is adding the id of the product to the context for the serializer
     '''
@@ -67,8 +71,28 @@ class BuyerPostReviewView(BuyerPermissionMixin, generics.CreateAPIView):
         return context
 
 
-class BuyerAddCartItemView(generics.CreateAPIView):
-    pass
+class BuyerListCartAddItemView(generics.ListCreateAPIView):
+    '''
+    This  view is responsible for both adding a cart_item and displaying users cart
+    '''
+    serializer_class = BuyerProductSerializer
+
+    # Returning only those items associated with the end user
+    def get_queryset(self):
+        return Cart.objects.filter(buyer=self.request.user)
+
+    # The create method  here is necessary as my serializer is not associated to one specific model
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data,
+                                         context={'request': request, 'product_id': kwargs.get('pk')})
+        if serializer.is_valid():
+            Cart.objects.create(product_id=serializer.validated_data['product_id'],
+                                buyer=serializer.validated_data['buyer'],
+                                quantity=serializer.validated_data['quantity'])
+            return Response(f"Item was successfully added to cart {serializer.data}",
+                            status=status.HTTP_201_CREATED)
+
+        return Response("Error with adding item to cart", status=status.HTTP_400_BAD_REQUEST)
 
 
 class BuyerDeleteCartItemView(generics.DestroyAPIView):
