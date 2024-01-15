@@ -29,7 +29,7 @@ Main files within beckend":
 - settings.py : Having main configurations for the project
 - urls.py : Having urls for the project. They lead towards the API urls which then further point to specific urls
 
-**Apps**
+### Apps:
 The project consists of the following apps:
  - **backend -> API**: This has models, serializers, mixins, permission/authentiction classes used across the entire project. Its url configurations contain urls which lead to specific applications
  - **backend -> Seller** : This app has views specific to the seller with url configurations for different views
