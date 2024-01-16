@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from API.product_serializers import ProductListSerializer
+from .models import OrderHistory
 
 
 class BuyerProductSerializer(serializers.Serializer):
@@ -10,3 +11,25 @@ class BuyerProductSerializer(serializers.Serializer):
     buyer = serializers.HiddenField(default=serializers.CurrentUserDefault())
     quantity = serializers.IntegerField()
     product_detail = ProductListSerializer(source='product', read_only=True)
+
+
+class BuyerOrderHistorySerializer(serializers.ModelSerializer):
+    price = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = OrderHistory
+
+        fields = [
+            'product_name',
+            'product_seller',
+            'price',
+            'product_image',
+            'quantity',
+            'buyer',
+            'purchased_at'
+        ]
+
+    def get_price(self, obj):
+        if obj.product_discount and obj.product_price is not None:
+            return obj.product_price - (obj.product_price * (obj.product_discount / 100))
+        return obj.product_price
