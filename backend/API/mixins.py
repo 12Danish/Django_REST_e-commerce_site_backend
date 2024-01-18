@@ -1,14 +1,13 @@
 from rest_framework import authentication
 from rest_framework import permissions
 from .permissions import IsSellerPermission, IsBuyerPermission
-
-
+from rest_framework_simplejwt
 # Defining  authentication mixin to be used in all seller views
 class AuthenticationMixin:
     '''
     This mixin just has the authentication classes defined which are being used in different views
                '''
-    authentication_classes = [authentication.SessionAuthentication, authentication.BasicAuthentication]
+    authentication_classes = []
 
 
 class SellerPermissionMixin:

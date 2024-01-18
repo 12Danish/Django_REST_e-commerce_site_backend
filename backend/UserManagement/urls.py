@@ -7,10 +7,10 @@ Buyer Login
 '''
 
 from django.urls import path, include
-from . import views
+from .views import UserRegistrationView
 
 app_name = "User_Management"
 
 urlpatterns = [
-    path("", views.PlaceHolderView.as_view())
+    path("register", UserRegistrationView.as_view(), name="register")
 ]
