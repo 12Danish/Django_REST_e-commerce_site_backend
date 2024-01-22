@@ -3,9 +3,8 @@ from API.product_serializers import ProductListSerializer, ProductDetailSerializ
 from API.mixins import BuyerPermissionMixin
 from API.review_serializers import ReviewSerializer
 from API.models import Product, Review
+from API.mixins import AuthenticationMixin
 
-from .models import Cart
-from .serializers import BuyerProductSerializer
 from datetime import timedelta
 import logging
 from django.utils import timezone
@@ -54,7 +53,7 @@ class BuyerProductRetrieveView(generics.RetrieveAPIView):
     lookup_field = "pk"
 
 
-class BuyerPostReviewView(BuyerPermissionMixin, generics.CreateAPIView):
+class BuyerPostReviewView(AuthenticationMixin, BuyerPermissionMixin, generics.CreateAPIView):
     '''
     This view is responsible for saving the review posted by the buyer to the review model.
     It requires permission as defined in the BuyerPermissionMixin.

@@ -1,7 +1,8 @@
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-from API.mixins import BuyerPermissionMixin
+
+from API.mixins import BuyerPermissionMixin, AuthenticationMixin
 from .models import Cart, OrderHistory
 from .serializers import BuyerProductSerializer, BuyerOrderHistorySerializer
 
@@ -100,7 +101,7 @@ class BuyerCheckoutView(generics.GenericAPIView):
             return Response("Cart is empty", status.HTTP_204_NO_CONTENT)
 
 
-class BuyerOrderHistory(generics.ListAPIView, BuyerPermissionMixin):
+class BuyerOrderHistory(AuthenticationMixin, generics.ListAPIView, BuyerPermissionMixin):
     serializer_class = BuyerOrderHistorySerializer
 
     def get_queryset(self):
