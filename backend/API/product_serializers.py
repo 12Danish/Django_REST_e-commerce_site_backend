@@ -1,3 +1,6 @@
+from rest_framework.fields import DateTimeField
+from rest_framework.utils.serializer_helpers import ReturnDict
+
 from .models import Product
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -30,7 +33,7 @@ class ProductListSerializer(serializers.ModelSerializer):
         ]
 
     # Getting the url based on the user who is logged in
-    def get_detail_url(self, obj):
+    def get_detail_url(self, obj: Product) -> reverse:
         # Getting the request
         request = self.context.get('request')
         # Seeing if the user is a seller
@@ -68,10 +71,10 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'reviews'
         ]
 
-    def get_date_created(self, obj):
+    def get_date_created(self, obj: Product) -> DateTimeField:
         return obj.date_created.strftime("%Y-%m-%d")
 
-    def get_reviews(self, obj):
+    def get_reviews(self, obj: Product) -> ReturnDict:
         reviews = obj.review.all()
         serialized_reviews = ReviewSerializer(reviews, many=True).data
         return serialized_reviews

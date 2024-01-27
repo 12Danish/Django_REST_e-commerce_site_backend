@@ -6,8 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="ce78a9bb-82d8-4be5-b2e2-bc0ea3b9baf2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/UserManagement/tests/test_views_UserManagement.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/UserManagement/tests/test_views_UserManagement.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/UserManagement/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/UserManagement/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/API/product_serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/API/product_serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/Buyer/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Buyer/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/backend/db.sqlite3" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
