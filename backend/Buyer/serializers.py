@@ -1,3 +1,4 @@
+from django.db.models import PositiveIntegerField
 from rest_framework import serializers
 from API.product_serializers import ProductListSerializer
 from .models import OrderHistory
@@ -29,7 +30,7 @@ class BuyerOrderHistorySerializer(serializers.ModelSerializer):
             'purchased_at'
         ]
 
-    def get_price(self, obj):
+    def get_price(self, obj: OrderHistory) -> PositiveIntegerField or None:
         if obj.product_discount and obj.product_price is not None:
             return obj.product_price - (obj.product_price * (obj.product_discount / 100))
         return obj.product_price

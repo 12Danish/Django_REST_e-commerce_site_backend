@@ -36,29 +36,33 @@ class UserRegistrationView(CreateAPIView):
     '''
     serializer_class = UserRegisterSerializer
 
-    def create(self, request, *args, **kwargs):
-        try:
-
-            logger.info(f"Received registration request. The data is {request.data}")
-            serializer = self.get_serializer(data=request.data)
-            if serializer.is_valid():
-
-                logger.info(f"Serialization was successfull")
-                # Create the user
-                user = get_user_model().objects.create_user(username=serializer.validated_data['username'],
-                                                            password=serializer.validated_data['password']
-                                                            , email=serializer.validated_data['email'])
-                logger.info(f"User was created successufully {user.username}")
-
-                # Attempting to add groups by calling function
-                self.add_group(serializer, user)
-                # saving the user to the databese
-                user.save()
-                logger.info(f"User was saved to the database")
-                return Response({"message": "User Account successfully created"}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({"error": "Credentials were not correctly provided", "data": serializer.data},
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            if get_user_model().objects.filter(username=serializer.validated_data['username']):
+                return Response({"error": " User with this username already exists!"},
                                 status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return self.create_user(request, serializer)
+
+        return Response({"error": "Invalid data"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def create_user(self, request, serializer: UserRegisterSerializer) -> Response:
+        try:
+            logger.info(f"Serialization was successful")
+            # Create the user
+            user = get_user_model().objects.create_user(username=serializer.validated_data['username'],
+                                                        password=serializer.validated_data['password']
+                                                        , email=serializer.validated_data['email'])
+            logger.info(f"User was created successufully {user.username}")
+
+            # Attempting to add groups by calling function
+            self.add_group(serializer, user)
+            # saving the user to the databese
+            user.save()
+            logger.info(f"User was saved to the database")
+            return Response({"message": "User Account successfully created"}, status=status.HTTP_201_CREATED)
+
 
         except ValidationError as validation_error:
             # Handle serializer validation errors
@@ -104,7 +108,7 @@ class UserLoginView(generics.GenericAPIView):
             username, password = credentials_str.split(':', 1)
             logger.info(f"{username} : {password}")
         except ValueError:
-            return Response("Invalid credentials format", status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "Invalid credentials format"}, status=status.HTTP_401_UNAUTHORIZED)
 
         data = {
             'username': username,
@@ -121,12 +125,12 @@ class UserLoginView(generics.GenericAPIView):
                 logger.info(f"{serialized_data.validated_data['username']} ")
                 user = get_user_model().objects.get(username=serialized_data.validated_data['username'])
             except:
-                return Response("No user with this username", status=status.HTTP_404_NOT_FOUND)
+                return Response({"error": "No user with this username"}, status=status.HTTP_404_NOT_FOUND)
 
             authorized = self.check_authorization_by_group(serialized_data, user)
 
             if not authorized:
-                return Response("Incorrect password", status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"error": "Incorrect password"}, status=status.HTTP_401_UNAUTHORIZED)
 
             refresh_token = self.get_token(user)
 
@@ -135,7 +139,7 @@ class UserLoginView(generics.GenericAPIView):
                 'access': str(refresh_token.access_token),
             })
         else:
-            return Response("Invalid Data", status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid Data"}, status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def get_credentials_from_header(request) -> str or Response:
@@ -145,7 +149,7 @@ class UserLoginView(generics.GenericAPIView):
         '''
         authorization_header = request.headers.get('Authorization')
         if not authorization_header or not authorization_header.startswith('Basic '):
-            return Response("Authorization header is missing or in the wrong format",
+            return Response({"error": "Authorization header is missing or in the wrong format"},
                             status=status.HTTP_401_UNAUTHORIZED)
 
         # Extract and decode base64-encoded credentials
@@ -169,14 +173,14 @@ class UserLoginView(generics.GenericAPIView):
                 logger.info(f"hello {authorization_check}")
                 logger.info(f"{serializer_instance.validated_data['password']}, {user.password}")
             else:
-                return Response("There is no buyer registered with these credentials",
+                return Response({"error": "There is no buyer registered with these credentials"},
                                 status=status.HTTP_404_NOT_FOUND)
 
         elif serializer_instance.validated_data['is_seller']:
             if user.groups.filter(name=SELLER_GROUP_NAME).exists():
                 authorization_check = check_password(serializer_instance.validated_data["password"], user.password)
             else:
-                return Response("There is no seller registered with these credentials",
+                return Response({"error": "There is no buyer registered with these credentials"},
                                 status=status.HTTP_404_NOT_FOUND)
         return authorization_check
 
