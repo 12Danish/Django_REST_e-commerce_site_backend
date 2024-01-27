@@ -5,20 +5,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ce78a9bb-82d8-4be5-b2e2-bc0ea3b9baf2" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/construction_site.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/API/mixins.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/API/mixins.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Buyer/buyer_cart_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Buyer/buyer_cart_views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Buyer/buyer_product_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Buyer/buyer_product_views.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/API/tests/test_user_serializers_API.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/Buyer/tests/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/Buyer/tests/test_buyer_cart_views_Buyer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/Buyer/tests/test_buyer_product_views_Buyer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/Buyer/tests/test_models_Buyer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/Buyer/tests/test_serializers_Buyer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/Buyer/tests/test_setup_Buyer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/Seller/tests/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/Seller/tests/test_views_Seller.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/UserManagement/tests/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/UserManagement/tests/test_serializers_UserManagement.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/UserManagement/tests/test_setup_UserManagement.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/UserManagement/tests/test_views_UserManagement.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/API/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/API/tests/test_models_API.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/Buyer/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/API/tests/test_product_serializers_API.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/Seller/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/API/tests/test_review_serializers_API.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/UserManagement/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/UserManagement/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/UserManagement/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/API/tests/test_setup_API.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/UserManagement/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/UserManagement/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/UserManagement/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/UserManagement/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/API/tests/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backend/settings.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/backend/db.sqlite3" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -37,30 +46,39 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2YgbWLQSyHrWYb0iBIFn7dAm4mb" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Sheryar/PycharmProjects/construction_site&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "C:/Users/Sheryar/PycharmProjects/construction_site/backend/API/tests",
+    "settings.editor.selected.configurable": "settings.sync"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Sheryar\PycharmProjects\construction_site" />
+      <recent name="C:\Users\Sheryar\PycharmProjects\construction_site\backend\API\tests" />
+      <recent name="C:\Users\Sheryar\PycharmProjects\construction_site\backend\Buyer\tests" />
+      <recent name="C:\Users\Sheryar\PycharmProjects\construction_site\backend\Seller\tests" />
+      <recent name="C:\Users\Sheryar\PycharmProjects\construction_site\backend\UserManagement\tests" />
+      <recent name="C:\Users\Sheryar\PycharmProjects\construction_site\backend\API" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Sheryar\PycharmProjects\construction_site\backend\API" />
+      <recent name="C:\Users\Sheryar\PycharmProjects\construction_site\backend\UserManagement\tests\UserManagement" />
       <recent name="C:\Users\Sheryar\PycharmProjects\construction_site\backend" />
+      <recent name="C:\Users\Sheryar\PycharmProjects\construction_site\backend\UserManagement\tests" />
+      <recent name="C:\Users\Sheryar\PycharmProjects\construction_site\backend\API" />
       <recent name="C:\Users\Sheryar\PycharmProjects\construction_site\backend\Api" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python tests.Python tests in test_views_UserManagement.py">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="construction_site" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -82,6 +100,47 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="test_views_UserManagement" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="construction_site" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/UserManagement/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\Sheryar\PycharmProjects\construction_site\backend\UserManagement\tests\UserManagement\test_views_UserManagement.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests in test_views_UserManagement.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="construction_site" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/UserManagement" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/backend/UserManagement/tests/test_views_UserManagement.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python tests.Python tests in test_views_UserManagement.py" />
+        <item itemvalue="Python.test_views_UserManagement" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
