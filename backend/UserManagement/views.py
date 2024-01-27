@@ -9,7 +9,7 @@ from .serializers import UserRegisterSerializer, UserLoginSerializer
 import base64
 from django.contrib.auth.hashers import check_password
 
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, Token
 
 '''
 I want to have sperate accounts for buyers and sellers -- Done
@@ -23,6 +23,10 @@ I dont want to make it absolutely necessary for a buyer to log in, in order to m
 # Configuring the django logging to log even the basic things
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+# Defining group names
+BUYER_GROUP_NAME = "buyer"
+SELLER_GROUP_NAME = "seller"
 
 
 class UserRegistrationView(CreateAPIView):
@@ -45,21 +49,10 @@ class UserRegistrationView(CreateAPIView):
                                                             password=serializer.validated_data['password']
                                                             , email=serializer.validated_data['email'])
                 logger.info(f"User was created successufully {user.username}")
-                try:
-                    if serializer.validated_data['is_buyer']:
-                        logger.info(f"Statement entered for buyer")
-                        logger.info(f"The groups  are {Group.objects.all()}")
-                        buyer_group = Group.objects.get(name="buyer")
-                        logger.info(f"The buyer group was found {buyer_group} ")
-                        user.groups.add(buyer_group)
-                        logger.info(f"Buyer group was addedd {user.groups.filter(name='is_buyer')}")
-                    elif serializer.validated_data['is_seller']:
-                        seller_group = Group.objects.get(name="seller")
-                        user.groups.add(seller_group)
-                        logger.info(f"Seller group was addedd {user.groups.filter(name='is_buyer')}")
-                except Exception as e:
-                    return Response(f"An error occurred while assigning group {e}")
 
+                # Attempting to add groups by calling function
+                self.add_group(serializer, user)
+                # saving the user to the databese
                 user.save()
                 logger.info(f"User was saved to the database")
                 return Response({"message": "User Account successfully created"}, status=status.HTTP_201_CREATED)
@@ -73,6 +66,27 @@ class UserRegistrationView(CreateAPIView):
 
         except Exception as e:
             return Response({"error": e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @staticmethod
+    def add_group(serializer_instance: UserRegisterSerializer, new_user: get_user_model()) -> None or Response:
+        '''
+        This function takes in the serializer_instance and the new user and attempts to add group.
+        It returns an error if the operation is unsuccessful
+        '''
+        try:
+            if serializer_instance.validated_data['is_buyer']:
+                logger.info(f"Statement entered for buyer")
+                logger.info(f"The groups  are {Group.objects.all()}")
+                buyer_group = Group.objects.get(name=BUYER_GROUP_NAME)
+                logger.info(f"The buyer group was found {buyer_group} ")
+                new_user.groups.add(buyer_group)
+                logger.info(f"Buyer group was addedd")
+            elif serializer_instance.validated_data['is_seller']:
+                seller_group = Group.objects.get(name=SELLER_GROUP_NAME)
+                new_user.groups.add(seller_group)
+                logger.info(f"Seller group was addedd ")
+        except Exception as e:
+            return Response(f"An error occurred while assigning group {e}")
 
 
 class UserLoginView(generics.GenericAPIView):
@@ -100,7 +114,6 @@ class UserLoginView(generics.GenericAPIView):
         }
         # getting the data serialized
         serialized_data = self.get_serializer(data=data)
-        authorized = False
         # If the data is valid then  matching the credentials for the specific group i.e buyer or seller
         if serialized_data.is_valid():
             logger.info(serialized_data.validated_data)
@@ -110,28 +123,12 @@ class UserLoginView(generics.GenericAPIView):
             except:
                 return Response("No user with this username", status=status.HTTP_404_NOT_FOUND)
 
-            if serialized_data.validated_data['is_buyer']:
-                if user.groups.filter(name="buyer").exists():
-                    authorized = check_password(serialized_data.validated_data['password'], user.password)
-                    logger.info(f"hello {authorized}")
-                    logger.info(f"{serialized_data.validated_data['password']}, {user.password}")
-                else:
-                    return Response("There is no buyer registered with these credentials",
-                                    status=status.HTTP_404_NOT_FOUND)
-
-            elif serialized_data.validated_data['is_seller']:
-                if user.groups.filter(name="seller").exists():
-                    authorized = check_password(serialized_data.validated_data["password"], user.password)
-                else:
-                    return Response("There is no seller registered with these credentials",
-                                    status=status.HTTP_404_NOT_FOUND)
+            authorized = self.check_authorization_by_group(serialized_data, user)
 
             if not authorized:
                 return Response("Incorrect password", status=status.HTTP_401_UNAUTHORIZED)
 
-            refresh_token = RefreshToken.for_user(user)
-            refresh_token['username'] = user.username
-            refresh_token['customer_type'] = "seller" if user.groups.filter(name="seller").exists() else "buyer"
+            refresh_token = self.get_token(user)
 
             return Response({
                 'refresh': str(refresh_token),
@@ -141,7 +138,7 @@ class UserLoginView(generics.GenericAPIView):
             return Response("Invalid Data", status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
-    def get_credentials_from_header(request):
+    def get_credentials_from_header(request) -> str or Response:
         '''
         This function extracts the authentication header from the request then
         decodes it and sends it back
@@ -155,3 +152,41 @@ class UserLoginView(generics.GenericAPIView):
         credentials_b64 = authorization_header[len('Basic '):]
         logger.info(f"{credentials_b64}")
         return base64.b64decode(credentials_b64).decode('utf-8')
+
+    @staticmethod
+    def check_authorization_by_group(serializer_instance: UserLoginSerializer,
+                                     user: get_user_model()) -> bool or Response:
+        '''
+        This function performs the authentication for the specific groups.
+        Takes the serializer_instance and the user instance as input
+        returns True for successful authentication  and False for unsuccessful
+        '''
+        authorization_check = False
+        if serializer_instance.validated_data['is_buyer']:
+            if user.groups.filter(name=BUYER_GROUP_NAME).exists():
+
+                authorization_check = check_password(serializer_instance.validated_data['password'], user.password)
+                logger.info(f"hello {authorization_check}")
+                logger.info(f"{serializer_instance.validated_data['password']}, {user.password}")
+            else:
+                return Response("There is no buyer registered with these credentials",
+                                status=status.HTTP_404_NOT_FOUND)
+
+        elif serializer_instance.validated_data['is_seller']:
+            if user.groups.filter(name=SELLER_GROUP_NAME).exists():
+                authorization_check = check_password(serializer_instance.validated_data["password"], user.password)
+            else:
+                return Response("There is no seller registered with these credentials",
+                                status=status.HTTP_404_NOT_FOUND)
+        return authorization_check
+
+    @staticmethod
+    def get_token(user: get_user_model()) -> Token:
+        '''
+        This function generates token and adds required claims
+        '''
+        token = RefreshToken.for_user(user)
+        token['username'] = user.username
+        token['customer_type'] = SELLER_GROUP_NAME if user.groups.filter(
+            name=SELLER_GROUP_NAME).exists() else BUYER_GROUP_NAME
+        return token

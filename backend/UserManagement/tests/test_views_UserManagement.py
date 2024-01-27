@@ -13,3 +13,8 @@ class TestRegisterUserManagementView(TestSetupUserManagement):
         res = self.client.post(self.register_url, self.buyer_user_data,
                                format="json")
         self.assertEqual(res.status_code, 201)
+
+    def test_succesfull_registration_for_seller(self):
+        res = self.client.post(self.register_url, self.seller_user_data,
+                               format="json")
+        self.assertEqual(res.status_code, 201)
