@@ -14,7 +14,7 @@ class UserRegisterSerializer(serializers.Serializer):
         is_seller = attrs.get('is_seller')
         is_buyer = attrs.get('is_buyer')
 
-        if is_buyer and is_seller:
+        if is_buyer is True and is_seller is True:
             raise serializers.ValidationError("Either 'is_buyer' or 'is_seller' should be true, not both.")
 
         return attrs

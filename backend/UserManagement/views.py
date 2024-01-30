@@ -63,7 +63,6 @@ class UserRegistrationView(CreateAPIView):
             logger.info(f"User was saved to the database")
             return Response({"message": "User Account successfully created"}, status=status.HTTP_201_CREATED)
 
-
         except ValidationError as validation_error:
             # Handle serializer validation errors
             return Response({"error": str(validation_error)}, status=status.HTTP_400_BAD_REQUEST)
@@ -103,7 +102,11 @@ class UserLoginView(generics.GenericAPIView):
     def post(self, request):
 
         # calling the function to get the decoded credentials
+        logger.info("Request entered in login view")
         credentials_str = self.get_credentials_from_header(request)
+        # Checking to see if an error is returned
+        if isinstance(credentials_str, Response):
+            return credentials_str
         try:
             username, password = credentials_str.split(':', 1)
             logger.info(f"{username} : {password}")
@@ -129,8 +132,8 @@ class UserLoginView(generics.GenericAPIView):
 
             authorized = self.check_authorization_by_group(serialized_data, user)
 
-            if not authorized:
-                return Response({"error": "Incorrect password"}, status=status.HTTP_401_UNAUTHORIZED)
+            if isinstance(authorized, Response):
+                return authorized
 
             refresh_token = self.get_token(user)
 
@@ -148,12 +151,14 @@ class UserLoginView(generics.GenericAPIView):
         decodes it and sends it back
         '''
         authorization_header = request.headers.get('Authorization')
+        logger.info(authorization_header)
         if not authorization_header or not authorization_header.startswith('Basic '):
             return Response({"error": "Authorization header is missing or in the wrong format"},
                             status=status.HTTP_401_UNAUTHORIZED)
 
         # Extract and decode base64-encoded credentials
         credentials_b64 = authorization_header[len('Basic '):]
+        logger.info(credentials_b64)
         logger.info(f"{credentials_b64}")
         return base64.b64decode(credentials_b64).decode('utf-8')
 
@@ -166,22 +171,19 @@ class UserLoginView(generics.GenericAPIView):
         returns True for successful authentication  and False for unsuccessful
         '''
         authorization_check = False
-        if serializer_instance.validated_data['is_buyer']:
+        if serializer_instance.validated_data['is_buyer'] is True:
             if user.groups.filter(name=BUYER_GROUP_NAME).exists():
-
                 authorization_check = check_password(serializer_instance.validated_data['password'], user.password)
                 logger.info(f"hello {authorization_check}")
                 logger.info(f"{serializer_instance.validated_data['password']}, {user.password}")
             else:
-                return Response({"error": "There is no buyer registered with these credentials"},
-                                status=status.HTTP_404_NOT_FOUND)
+                return Response({"error": "No buyer registered with this password"}, status=status.HTTP_404_NOT_FOUND)
 
-        elif serializer_instance.validated_data['is_seller']:
+        elif serializer_instance.validated_data['is_seller'] is True:
             if user.groups.filter(name=SELLER_GROUP_NAME).exists():
                 authorization_check = check_password(serializer_instance.validated_data["password"], user.password)
             else:
-                return Response({"error": "There is no buyer registered with these credentials"},
-                                status=status.HTTP_404_NOT_FOUND)
+                return Response({"error": "No seller registered with this password"}, status=status.HTTP_404_NOT_FOUND)
         return authorization_check
 
     @staticmethod
