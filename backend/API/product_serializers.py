@@ -76,8 +76,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
     def get_reviews(self, obj: Product) -> ReturnDict:
         reviews = obj.review.all()
-        serialized_reviews = ReviewSerializer(reviews, many=True).data
-        return serialized_reviews
+        return ReviewSerializer(reviews, many=True).data
 
 
 # This serializer will handle the serialization for creating a new product

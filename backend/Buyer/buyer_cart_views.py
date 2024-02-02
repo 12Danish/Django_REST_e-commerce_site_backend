@@ -2,6 +2,7 @@ from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
+from API.permissions import IsBuyerPermission
 from API.mixins import BuyerPermissionMixin, AuthenticationMixin
 from .models import Cart, OrderHistory
 from .serializers import BuyerProductSerializer, BuyerOrderHistorySerializer
@@ -45,8 +46,7 @@ class BuyerUpdateCartItemView(generics.RetrieveUpdateAPIView):
     # Getting the object with the id specified from the frontend
     def get_object(self):
         queryset = self.get_queryset()
-        obj = generics.get_object_or_404(queryset, id=self.kwargs.get('pk'))
-        return obj
+        return generics.get_object_or_404(queryset, id=self.kwargs.get('pk'))
 
     # Performing the update action
     def update(self, request, *args, **kwargs):

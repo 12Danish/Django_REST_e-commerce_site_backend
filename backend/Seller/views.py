@@ -16,8 +16,7 @@ class SellerProductListView(AuthenticationMixin, SellerPermissionMixin, generics
     def get_queryset(self):
         print(self.request.user)
         if self.request.user.groups.filter(name='seller').exists():
-            qs = Product.objects.filter(owner=self.request.user)
-            return qs
+            return Product.objects.filter(owner=self.request.user)
         return Product.objects.none()
 
 

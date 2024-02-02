@@ -4,7 +4,7 @@ from API.mixins import BuyerPermissionMixin
 from API.review_serializers import ReviewSerializer
 from API.models import Product, Review
 from API.mixins import AuthenticationMixin
-
+from API.permissions import IsBuyerPermission
 from datetime import timedelta
 import logging
 from django.utils import timezone
@@ -42,7 +42,7 @@ class BuyerProductListView(generics.ListAPIView):
         # A simple function to display only the appropriate products within a time field
 
     def one_month_ago(self):
-        time = timezone.now() - timedelta(days=60)
+        time = timezone.now() - timedelta(days=100)
         return time
 
 

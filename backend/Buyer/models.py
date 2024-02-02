@@ -10,6 +10,8 @@ Need to handle logic of what to do when seller deletes a product
 class Cart(models.Model):
     '''
     This model is used to store the products added by the user to the cart.
+    The registered buyer will be null if the user is not authenticated
+    The unregistered buyer will be null if the user is authenticated
     '''
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()

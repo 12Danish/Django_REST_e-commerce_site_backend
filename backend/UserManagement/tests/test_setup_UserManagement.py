@@ -4,6 +4,10 @@ from django.urls import reverse
 
 
 class TestSetupUserManagement(APITestCase):
+    '''
+    Creating the setup for testing the registering and login functionality
+    '''
+
     def setUp(self) -> None:
         self.register_url = reverse('User_Management:register')
         self.login_url = reverse('User_Management:login')
