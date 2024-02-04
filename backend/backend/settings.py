@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 import os
 
@@ -59,6 +59,30 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'backend.urls'
 
+# settings.py
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',  # Set the logging level to INFO or higher
+    },
+    'loggers': {
+        'faker': {
+            'handlers': ['console'],
+            'level': 'INFO',  # Set the logging level to INFO or higher
+            'propagate': False,
+        },
+    },
+}
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -83,6 +107,12 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
     ]}
 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True
+
+}
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
@@ -122,4 +152,3 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-

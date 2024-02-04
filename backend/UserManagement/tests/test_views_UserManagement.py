@@ -1,24 +1,15 @@
 import base64
 import logging
-from .test_setup_UserManagement import TestSetupUserManagement
+from .test_setup_UserManagement import TestSetupUserManagementViews
 import pdb
-
 # Configuring the django logging to log even the basic things
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-class TestRegisterUserManagementView(TestSetupUserManagement):
+class TestRegisterUserManagementView(TestSetupUserManagementViews):
 
-    def setUp(self) -> None:
-        super().setUp()
-        self.invalid_seller_and_buyer = {
-            "username": "testinvalid",
-            "password": "danish2004",
-            "email": "danishabbas2004@gmail.com",
-            "is_buyer": "True",
-            "is_seller": "True"
-        }
+
 
     def test_failed_registration_without_credentials(self):
         res = self.client.post(self.register_url)
@@ -50,7 +41,7 @@ class TestRegisterUserManagementView(TestSetupUserManagement):
         self.assertEqual(res.status_code, 201)
 
 
-class TestLoginUserManagementView(TestSetupUserManagement):
+class TestLoginUserManagementView(TestSetupUserManagementViews):
 
     def setUp(self) -> None:
         super().setUp()
@@ -61,21 +52,6 @@ class TestLoginUserManagementView(TestSetupUserManagement):
         self.client.post(self.register_url, self.seller_user_data,
                          format="json")
 
-        self.unregistered_buyer_user_data = {
-            "username": "unregistered_buyer",
-            "password": "danish2004",
-            "email": "danishabbas2004@gmail.com",
-            "is_buyer": "True",
-            "is_seller": "False"
-        }
-
-        self.unregistered_seller_user_data = {
-            "username": "unregistered_seller",
-            "password": "danish2004",
-            "email": "danishabbas2004@gmail.com",
-            "is_buyer": "False",
-            "is_seller": "True"
-        }
 
     @staticmethod
     def encode_user_credentials(username, password):
