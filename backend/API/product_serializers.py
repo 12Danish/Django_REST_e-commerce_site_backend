@@ -1,3 +1,4 @@
+from rest_framework.exceptions import ValidationError
 from rest_framework.fields import DateTimeField
 from rest_framework.utils.serializer_helpers import ReturnDict
 
@@ -24,9 +25,11 @@ class ProductListSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'price',
+            'image',
             'sale_item',
             'sale_price',
             'popular',
+            'category',
             'date_created',
             'detail_url'
 
@@ -52,6 +55,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         '''
 
     popular = serializers.BooleanField(read_only=True)
+    id = serializers.PrimaryKeyRelatedField(read_only=True)
     reviews = serializers.SerializerMethodField(read_only=True)
     seller = PublicUserSerializer(source="owner", read_only=True)
     date_created = serializers.SerializerMethodField(read_only=True)
@@ -60,8 +64,11 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         model = Product
 
         fields = [
+            'id',
             'title',
             'price',
+            'image',
+            'category',
             'discount',
             'sale_price',
             'popular',
@@ -88,13 +95,21 @@ class ProductCreateSerializer(serializers.ModelSerializer):
 
     # Having a validator to ensure that each product name is unique
     title = serializers.CharField(max_length=200, validators=[UniqueValidator(queryset=Product.objects.all())])
+    id = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Product
 
         fields = [
+            'id',
             'title',
+            'image',
             'price',
             'description',
             'discount',
         ]
+
+    def validate(self, attrs):
+        if attrs.get('price') < 0 or (attrs.get('discount') and attrs.get('discount') < 0):
+            raise ValidationError
+        return attrs
