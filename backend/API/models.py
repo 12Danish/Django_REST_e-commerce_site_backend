@@ -1,17 +1,34 @@
 from django.db import models
 from django.contrib.auth.models import User
-from datetime import datetime
+from datetime import datetime, timedelta
+from django.utils import timezone
+from django.db.models import Q
+import logging
+
+# Configuring the django logging to log even the basic things
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 class ProductQuerySet(models.QuerySet):
     def latest(self):
-        pass
+        logger.info("Request received  in qs latest")
+        return self.filter(date_created__gte=self.one_month_ago())
 
     def popular(self):
-        pass
+        return self.filter(n_bought__gt=10)
 
-    def search(self):
-        pass
+    def search(self, query, user):
+        lookup = Q(title__icontains=query)
+        return self.filter(lookup)
+
+    def category(self, category):
+        return self.filter(category=category)
+
+    @staticmethod
+    def one_month_ago():
+        time = timezone.now() - timedelta(days=30)
+        return time
 
 
 class ProductManager(models.Manager):
@@ -19,13 +36,16 @@ class ProductManager(models.Manager):
         return ProductQuerySet(self.model, using=self._db)
 
     def popular(self):
-        self.get_queryset().popular()
+        return self.get_queryset().popular()
 
     def latest(self):
-        self.get_queryset().latest()
+        return self.get_queryset().latest()
 
-    def search(self):
-        self.get_queryset().search()
+    def search(self, query, user):
+        return self.get_queryset().search(query, user)
+
+    def category(self, category):
+        return self.get_queryset().category(category)
 
 
 # This is the model for all of my products
@@ -58,14 +78,6 @@ class Product(models.Model):
             return "%.2f" % (float(self.price) - (float(self.price) * float(self.discount) / 100))
         else:
             return self.price
-
-    # The property for calculating whether a product is a popular one or not
-    @property
-    def popular(self):
-        if int(self.n_bought) > 10:
-            return True
-        else:
-            return False
 
     # Representation for model Instances
     def __str__(self):

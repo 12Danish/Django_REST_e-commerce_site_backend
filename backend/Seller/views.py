@@ -22,10 +22,17 @@ class SellerProductListView(AuthenticationMixin, SellerPermissionMixin, generics
     # Getting the queryset
     def get_queryset(self):
         logger.info(self.request.user)
-        return Product.objects.filter(owner=self.request.user)
+        qs = Product.objects.filter(owner=self.request.user)
+        search = self.request.query_params.get('search')
+        logger.info(search)
+        if search:
+            logger.info(search)
+            qs = qs.search(search, self.request.user)
+        return qs
+
+    # This is the view for creating a product
 
 
-# This is the view for creating a product
 class SellerProductCreateView(AuthenticationMixin, SellerPermissionMixin, generics.CreateAPIView):
     serializer_class = ProductCreateSerializer
     queryset = Product.objects.all()

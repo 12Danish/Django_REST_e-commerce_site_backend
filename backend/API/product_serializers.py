@@ -28,7 +28,6 @@ class ProductListSerializer(serializers.ModelSerializer):
             'image',
             'sale_item',
             'sale_price',
-            'popular',
             'category',
             'date_created',
             'detail_url'
@@ -54,7 +53,6 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
         '''
 
-    popular = serializers.BooleanField(read_only=True)
     id = serializers.PrimaryKeyRelatedField(read_only=True)
     reviews = serializers.SerializerMethodField(read_only=True)
     seller = PublicUserSerializer(source="owner", read_only=True)
@@ -71,16 +69,17 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'category',
             'discount',
             'sale_price',
-            'popular',
             'seller',
             'description',
             'date_created',
             'reviews'
         ]
 
+    @staticmethod
     def get_date_created(self, obj: Product) -> DateTimeField:
         return obj.date_created.strftime("%Y-%m-%d")
 
+    @staticmethod
     def get_reviews(self, obj: Product) -> ReturnDict:
         reviews = obj.review.all()
         return ReviewSerializer(reviews, many=True).data
