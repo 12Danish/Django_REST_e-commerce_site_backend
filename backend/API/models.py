@@ -3,6 +3,31 @@ from django.contrib.auth.models import User
 from datetime import datetime
 
 
+class ProductQuerySet(models.QuerySet):
+    def latest(self):
+        pass
+
+    def popular(self):
+        pass
+
+    def search(self):
+        pass
+
+
+class ProductManager(models.Manager):
+    def get_queryset(self):
+        return ProductQuerySet(self.model, using=self._db)
+
+    def popular(self):
+        self.get_queryset().popular()
+
+    def latest(self):
+        self.get_queryset().latest()
+
+    def search(self):
+        self.get_queryset().search()
+
+
 # This is the model for all of my products
 class Product(models.Model):
     '''
@@ -18,6 +43,7 @@ class Product(models.Model):
     n_bought = models.PositiveIntegerField(default=0)
     discount = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     date_created = models.DateTimeField(auto_created=True, default=datetime.now)
+    objects = ProductManager()
 
     @property
     def sale_item(self):
