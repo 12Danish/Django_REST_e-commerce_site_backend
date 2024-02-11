@@ -7,7 +7,6 @@ from API.mixins import AuthenticationMixin
 from API.permissions import IsBuyerPermission
 import logging
 
-
 # Configuring the django logging to log even the basic things
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -27,9 +26,7 @@ class BuyerProductListView(generics.ListAPIView):
     # This will define the queryset for the display for the buyer
     def get_queryset(self):
         # Getting all the objects from the
-        logger.info("Request rrceived")
         qs = Product.objects.latest()
-        logger.info(qs)
         # Checking if a category has been defined by the user in the params
         category = self.request.query_params.get('category')
         search = self.request.query_params.get('search')

@@ -14,7 +14,6 @@ class ReviewSerializer(serializers.ModelSerializer):
             "stars",
             "body",
             "name"
-
         ]
 
     # Before successfully creating an instance of the model sending the information for product_id and the user

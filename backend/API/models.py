@@ -10,10 +10,14 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+def one_month_ago():
+    return timezone.now() - timedelta(days=30)
+
+
 class ProductQuerySet(models.QuerySet):
     def latest(self):
         logger.info("Request received  in qs latest")
-        return self.filter(date_created__gte=self.one_month_ago())
+        return self.filter(date_created__gte=one_month_ago())
 
     def popular(self):
         return self.filter(n_bought__gt=10)
@@ -24,11 +28,6 @@ class ProductQuerySet(models.QuerySet):
 
     def category(self, category):
         return self.filter(category=category)
-
-    @staticmethod
-    def one_month_ago():
-        time = timezone.now() - timedelta(days=30)
-        return time
 
 
 class ProductManager(models.Manager):

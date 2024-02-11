@@ -18,6 +18,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     # Defining this attribute which will produce the url for the detail view
     detail_url = serializers.SerializerMethodField(read_only=True)
     id = serializers.PrimaryKeyRelatedField(read_only=True)
+    date_created = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Product
@@ -33,6 +34,10 @@ class ProductListSerializer(serializers.ModelSerializer):
             'detail_url'
 
         ]
+
+    @staticmethod
+    def get_date_created(obj):
+        return ProductDetailSerializer.get_date_created(obj)
 
     # Getting the url based on the user who is logged in
     def get_detail_url(self, obj: Product) -> reverse:
@@ -76,11 +81,11 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         ]
 
     @staticmethod
-    def get_date_created(self, obj: Product) -> DateTimeField:
+    def get_date_created(obj: Product) -> DateTimeField:
         return obj.date_created.strftime("%Y-%m-%d")
 
     @staticmethod
-    def get_reviews(self, obj: Product) -> ReturnDict:
+    def get_reviews(obj: Product) -> ReturnDict:
         reviews = obj.review.all()
         return ReviewSerializer(reviews, many=True).data
 
@@ -106,6 +111,7 @@ class ProductCreateSerializer(serializers.ModelSerializer):
             'price',
             'description',
             'discount',
+            'category'
         ]
 
     def validate(self, attrs):

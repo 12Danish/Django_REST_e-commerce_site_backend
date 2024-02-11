@@ -22,7 +22,7 @@ class TestSellerAccess(TestSetupSellerViews):
 
     def test_failed_with_registered_buyer(self):
         res = self.client.get(self.seller_homepage_url, headers=self.buyer_headers_1)
-        self.assertEqual(res.status_code, 401)
+        self.assertEqual(res.status_code, 403)
 
     def test_passed_with_registered_seller(self):
         res = self.client.get(self.seller_homepage_url, headers=self.seller_headers_1)
@@ -36,6 +36,17 @@ class TestSellerCreateProductView(TestSetupSellerViews):
         image = Image.new('RGB', (100, 100))
         image.save(bts, 'jpeg')
         return SimpleUploadedFile("new_image_test.jpg", bts.getvalue())
+
+    @staticmethod
+    def complete_product_information_for_registration():
+        return {
+            'title': fake.name(),
+            'price': random.randint(2, 10000),
+            'image': TestSellerCreateProductView.temporary_image(),
+            'description': fake.name(),
+            'discount': 5,
+            'category': 'test_category'
+        }
 
     def test_failed_with_incomplete_data(self):
         data = {
@@ -73,13 +84,7 @@ class TestSellerCreateProductView(TestSetupSellerViews):
         self.assertEqual(res.status_code, 400)
 
     def test_passed_with_complete_information(self):
-        data = {
-            'title': fake.name(),
-            'price': random.randint(2, 10000),
-            'image': self.temporary_image(),
-            'description': fake.name(),
-            'discount': 5,
-        }
+        data = self.complete_product_information_for_registration()
         res = self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=data,
                                format='multipart')
         self.assertEqual(res.status_code, 201)
