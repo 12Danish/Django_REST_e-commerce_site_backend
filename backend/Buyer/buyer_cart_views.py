@@ -1,3 +1,5 @@
+import uuid
+
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
@@ -5,43 +7,54 @@ from rest_framework.response import Response
 from API.permissions import IsBuyerPermission
 from API.mixins import BuyerPermissionMixin, AuthenticationMixin
 from .models import Cart, OrderHistory
-from .serializers import BuyerProductSerializer, BuyerOrderHistorySerializer
+from .mixins import QuerySetForCartMixin
+from .serializers import BuyerProductAddSerializer, BuyerOrderHistorySerializer, BuyerCartListSerializer
 
 '''
 These views need to be modified when the logic for randomly generated system ids for guest users is implemented
 '''
 
 
-class BuyerListCartAddItemView(generics.ListCreateAPIView):
+class BuyerListCartItemView(generics.ListAPIView, QuerySetForCartMixin):
+    serializer_class = BuyerCartListSerializer
+
+    def get_queryset(self):
+        return self.get_queryset_by_user(self.request.user, self.request.session['device_id'])
+
+
+class BuyerCartAddItemView(generics.CreateAPIView, QuerySetForCartMixin):
     '''
     This  view is responsible for both adding a cart_item and displaying users cart
     '''
-    serializer_class = BuyerProductSerializer
+    serializer_class = BuyerProductAddSerializer
 
-    # Returning only those items associated with the end user
-    def get_queryset(self):
-        return Cart.objects.filter(buyer=self.request.user)
-
-    # The create method  here is necessary as my serializer is not associated to one specific model
     def create(self, request, *args, **kwargs):
         product_id = kwargs.get('pk')
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            Cart.objects.create(product_id=product_id,
-                                buyer=serializer.validated_data['buyer'],
-                                quantity=serializer.validated_data['quantity'])
+            product_data = {'product_id': product_id, 'quantity': serializer.validated_data['quantity']}
+            if self.request.user.is_authenticated:
+                Cart.objects.create(
+                    buyer=self.request.user,
+                    **product_data)
+
+            elif not request.session['device_id'].exists():
+                device_id = uuid.uuid4()
+                Cart.objects.create(device_id=device_id, **product_data)
+                self.request.session['device_id'] = device_id
+
             return Response(f"Item was successfully added to cart {product_id} {serializer.data}",
                             status=status.HTTP_201_CREATED)
 
         return Response("Error with adding item to cart", status=status.HTTP_400_BAD_REQUEST)
 
 
-class BuyerUpdateCartItemView(generics.RetrieveUpdateAPIView):
-    serializer_class = BuyerProductSerializer
+class BuyerUpdateCartItemView(generics.RetrieveUpdateAPIView, QuerySetForCartMixin):
+    serializer_class = BuyerProductAddSerializer
 
     # Defining the queryset as all items associated to the buyer
     def get_queryset(self):
-        return Cart.objects.filter(buyer=self.request.user)
+        return self.get_queryset_by_user(self.request.user, self.request.session['device_id'])
 
     # Getting the object with the id specified from the frontend
     def get_object(self):
@@ -60,14 +73,14 @@ class BuyerUpdateCartItemView(generics.RetrieveUpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class BuyerDeleteCartItemView(generics.DestroyAPIView):
-    serializer_class = BuyerProductSerializer
+class BuyerDeleteCartItemView(generics.DestroyAPIView, QuerySetForCartMixin):
+    serializer_class = BuyerProductAddSerializer
 
     def get_queryset(self):
-        return Cart.objects.filter(buyer=self.request.user)
+        return self.get_queryset_by_user(self.request.user, self.request.session['device_id'])
 
 
-class BuyerCheckoutView(generics.GenericAPIView):
+class BuyerCheckoutView(generics.GenericAPIView,QuerySetForCartMixin):
     '''This view will handle the checkout logic.
     It will call another class for sending emails and generating a pdf receipt.
     It will save all the items to the order_history model if the user is authenticated.
@@ -75,7 +88,7 @@ class BuyerCheckoutView(generics.GenericAPIView):
     '''
 
     def get(self, request, *args, **kwargs):
-        cart_items = Cart.objects.filter(buyer=request.user)
+        cart_items = self.get_queryset_by_user(self.request.user, self.request.session['device_id'])
         # If the cart is non-empty this is run
         if cart_items:
             # If the user is logged in then saving the bought items to order_history

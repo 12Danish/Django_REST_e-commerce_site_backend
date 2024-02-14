@@ -16,7 +16,7 @@ I want to have sperate accounts for buyers and sellers -- Done
 I want to log buyers in seperately and log sellers in seperately -- done
 I want to add the group of is_buyer to buyer and the group of is_seller to seller in order to seperate their views -- done 
 I want a seller to be automatically logged out if he leaves the seller interface
-I dont want the seller to be able to access the seller-specific views using his seller account
+I dont want the seller to be able to access the seller-specific views using his seller account--done
 I dont want to make it absolutely necessary for a buyer to log in, in order to make a transaction. He should be able to do so 
   
 '''
