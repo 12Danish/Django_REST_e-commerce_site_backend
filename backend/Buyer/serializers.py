@@ -10,7 +10,6 @@ class BuyerProductAddSerializer(serializers.Serializer):
     '''
     cart_item_id = serializers.PrimaryKeyRelatedField(source='id', read_only=True)
     quantity = serializers.IntegerField()
-    product_detail = ProductListSerializer(source='product', read_only=True)
 
 
 class BuyerCartListSerializer:

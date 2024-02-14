@@ -13,9 +13,9 @@ class Cart(models.Model):
     The registered buyer will be null if the user is not authenticated
     The unregistered buyer will be null if the user is authenticated
     '''
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
-    buyer = models.ForeignKey(User, on_delete=models.CASCADE)
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     device_id = models.CharField(null=True, blank=True, max_length=200)

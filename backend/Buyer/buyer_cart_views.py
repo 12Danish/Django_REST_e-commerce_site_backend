@@ -38,8 +38,8 @@ class BuyerCartAddItemView(generics.CreateAPIView, QuerySetForCartMixin):
                     buyer=self.request.user,
                     **product_data)
 
-            elif not request.session['device_id'].exists():
-                device_id = uuid.uuid4()
+            elif not request.session.get('device_id'):
+                device_id = str(uuid.uuid4())
                 Cart.objects.create(device_id=device_id, **product_data)
                 self.request.session['device_id'] = device_id
 
@@ -80,7 +80,7 @@ class BuyerDeleteCartItemView(generics.DestroyAPIView, QuerySetForCartMixin):
         return self.get_queryset_by_user(self.request.user, self.request.session['device_id'])
 
 
-class BuyerCheckoutView(generics.GenericAPIView,QuerySetForCartMixin):
+class BuyerCheckoutView(generics.GenericAPIView, QuerySetForCartMixin):
     '''This view will handle the checkout logic.
     It will call another class for sending emails and generating a pdf receipt.
     It will save all the items to the order_history model if the user is authenticated.
