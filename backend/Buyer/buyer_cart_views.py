@@ -21,11 +21,10 @@ and performing actions accordingly
 the data is deleted once the session expires
 when a user logs in and has a valid session the data from it is transferred to the users cart model 
 
-
 '''
 
 
-class BuyerListCartItemView(generics.ListAPIView):
+class BuyerListCartItemView(generics.ListAPIView, QuerySetForCartMixin):
     serializer_class = BuyerCartListSerializer
     '''
     This view is responsible for getting the cart items for authenticated users as well as 
@@ -33,12 +32,7 @@ class BuyerListCartItemView(generics.ListAPIView):
     '''
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            return Cart.objects.filter(buyer=self.request.user)
-        elif self.request.COOKIES.get('sessionid'):
-            return self.request.session.get('cart_data')
-        else:
-            return []
+        return self.get_queryset_by_user(self.request)
 
 
 class BuyerCartAddItemView(generics.CreateAPIView):
@@ -88,7 +82,7 @@ class BuyerUpdateCartItemView(generics.RetrieveUpdateAPIView, QuerySetForCartMix
 
     # Defining the queryset as all items associated to the buyer
     def get_queryset(self):
-        return self.get_queryset_by_user(self.request.user, self.request.session.get('device_id'))
+        return self.get_queryset_by_user(self.request)
 
     # Getting the object with the id specified from the frontend
     def get_object(self):
@@ -111,7 +105,7 @@ class BuyerDeleteCartItemView(generics.DestroyAPIView, QuerySetForCartMixin):
     serializer_class = BuyerProductAddSerializer
 
     def get_queryset(self):
-        return self.get_queryset_by_user(self.request.user, self.request.session.get('device_id'))
+        return self.get_queryset_by_user(self.request.user)
 
 
 class BuyerCheckoutView(generics.GenericAPIView, QuerySetForCartMixin):
@@ -122,7 +116,7 @@ class BuyerCheckoutView(generics.GenericAPIView, QuerySetForCartMixin):
     '''
 
     def get(self, request, *args, **kwargs):
-        cart_items = self.get_queryset_by_user(self.request.user, self.request.session.get('device_id'))
+        cart_items = self.get_queryset_by_user(self.request.user)
         # If the cart is non-empty this is run
         if cart_items:
             # If the user is logged in then saving the bought items to order_history

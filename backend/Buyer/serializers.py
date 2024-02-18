@@ -20,8 +20,6 @@ class BuyerCartListSerializer(serializers.Serializer):
     def get_cart_item_id(obj):
         if isinstance(obj, Cart):
             return obj.id
-        elif isinstance(obj, dict):
-            return obj['id']
         return None
 
     @staticmethod
@@ -29,8 +27,6 @@ class BuyerCartListSerializer(serializers.Serializer):
         product = None
         if isinstance(obj, Cart):
             product = obj.product
-        elif isinstance(obj, dict):
-            product = Product.objects.filter(id=obj['product_id']).first()
         return {
             "title": product.title,
             "price": product.sale_price
