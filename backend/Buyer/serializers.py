@@ -1,27 +1,39 @@
 from django.db.models import PositiveIntegerField
 from rest_framework import serializers
-from API.product_serializers import ProductListSerializer
-from .models import OrderHistory
+from API.models import Product
+from .models import OrderHistory, Cart
 
 
 class BuyerProductAddSerializer(serializers.Serializer):
     '''
     This serializer will be used to store both the order history and the cart Data
     '''
-    cart_item_id = serializers.PrimaryKeyRelatedField(source='id', read_only=True)
-    quantity = serializers.IntegerField()
+    quantity = serializers.IntegerField(write_only=True)
 
 
-class BuyerCartListSerializer:
-    cart_item_id = serializers.PrimaryKeyRelatedField(source='id', read_only=True)
+class BuyerCartListSerializer(serializers.Serializer):
+    cart_item_id = serializers.SerializerMethodField(read_only=True)
     quantity = serializers.IntegerField(read_only=True)
     product_detail = serializers.SerializerMethodField(read_only=True)
 
-    def get_product_detail(self, obj):
+    @staticmethod
+    def get_cart_item_id(obj):
+        if isinstance(obj, Cart):
+            return obj.id
+        elif isinstance(obj, dict):
+            return obj['id']
+        return None
+
+    @staticmethod
+    def get_product_detail(obj):
+        product = None
+        if isinstance(obj, Cart):
+            product = obj.product
+        elif isinstance(obj, dict):
+            product = Product.objects.filter(id=obj['product_id']).first()
         return {
-            "title": obj.product.title,
-            "image": obj.product.image,
-            "price": obj.product.sale_price
+            "title": product.title,
+            "price": product.sale_price
         }
 
 
