@@ -74,7 +74,7 @@ class BuyerCartAddItemView(generics.CreateAPIView):
                 return_data,
                 status=status.HTTP_201_CREATED)
 
-        return Response("Error with adding item to cart", status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "adding item to cart unsuccessful"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class BuyerUpdateCartItemView(generics.RetrieveUpdateAPIView, QuerySetForCartMixin):
@@ -92,20 +92,23 @@ class BuyerUpdateCartItemView(generics.RetrieveUpdateAPIView, QuerySetForCartMix
     # Performing the update action
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer = self.get_serializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
         # Manually update the instance with validated data
-        instance.quantity = serializer.validated_data.get('quantity', instance.quantity)
-        instance.save()
+        try:
+            instance.quantity = serializer.validated_data.get('quantity', instance.quantity)
+            instance.save()
+        except:
+            return Response({"error": "Item was not updated in database"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"message": "The item was updated successfully"}, status=status.HTTP_200_OK)
 
 
 class BuyerDeleteCartItemView(generics.DestroyAPIView, QuerySetForCartMixin):
     serializer_class = BuyerProductAddSerializer
 
     def get_queryset(self):
-        return self.get_queryset_by_user(self.request.user)
+        return self.get_queryset_by_user(self.request)
 
 
 class BuyerCheckoutView(generics.GenericAPIView, QuerySetForCartMixin):
@@ -137,9 +140,9 @@ class BuyerCheckoutView(generics.GenericAPIView, QuerySetForCartMixin):
 
             # Emptying the cart associated to the user
             cart_items.delete()
-            return Response("Order was placed", status.HTTP_200_OK)
+            return Response({"message": "Order was placed"}, status.HTTP_200_OK)
         else:
-            return Response("Cart is empty", status.HTTP_204_NO_CONTENT)
+            return Response({"message": "Cart is empty"}, status.HTTP_204_NO_CONTENT)
 
 
 class BuyerOrderHistory(AuthenticationMixin, generics.ListAPIView, BuyerPermissionMixin):

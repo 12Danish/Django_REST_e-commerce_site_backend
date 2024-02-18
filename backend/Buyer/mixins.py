@@ -2,6 +2,12 @@ from .models import Cart
 
 
 class QuerySetForCartMixin:
+    '''
+    This mixin is responsible for retrieving the queryset for both authenticated users as well as
+    anonymous users
+    It converts the anonymous users into Queryset objects before returning
+    '''
+
     def get_queryset_by_user(self, request):
         if request.user.is_authenticated:
             return Cart.objects.filter(buyer=request.user)
