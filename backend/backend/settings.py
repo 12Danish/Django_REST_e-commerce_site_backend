@@ -131,7 +131,7 @@ DATABASES = {
 AUTH_PASSWORD_VALIDATORS = [
 
 ]
-
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 

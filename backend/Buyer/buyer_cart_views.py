@@ -1,10 +1,9 @@
-import uuid
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from API.mixins import BuyerPermissionMixin, AuthenticationMixin
 from .models import Cart, OrderHistory
-from .mixins import QuerySetForCartMixin
+from .mixins import QuerySetForCartMixin, ObjectRetrievalForCartMixin
 from .serializers import BuyerProductAddSerializer, BuyerOrderHistorySerializer, BuyerCartListSerializer
 import logging
 
@@ -77,38 +76,58 @@ class BuyerCartAddItemView(generics.CreateAPIView):
         return Response({"error": "adding item to cart unsuccessful"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class BuyerUpdateCartItemView(generics.RetrieveUpdateAPIView, QuerySetForCartMixin):
+class BuyerUpdateCartItemView(ObjectRetrievalForCartMixin, generics.RetrieveUpdateAPIView):
     serializer_class = BuyerProductAddSerializer
-
-    # Defining the queryset as all items associated to the buyer
-    def get_queryset(self):
-        return self.get_queryset_by_user(self.request)
-
-    # Getting the object with the id specified from the frontend
-    def get_object(self):
-        queryset = self.get_queryset()
-        return generics.get_object_or_404(queryset, id=self.kwargs.get('pk'))
 
     # Performing the update action
     def update(self, request, *args, **kwargs):
-        instance = self.get_object()
+        instance = self.handle_object_retrieval()
+        logger.info(f"Update view entered {instance}")
         serializer = self.get_serializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
         # Manually update the instance with validated data
         try:
-            instance.quantity = serializer.validated_data.get('quantity', instance.quantity)
-            instance.save()
+            logger.info(f"This is the instance{instance}")
+            if request.user.is_authenticated:
+                instance.quantity = serializer.validated_data.get('quantity', instance.quantity)
+                instance.save()
+            else:
+                cart_data = request.session.get('cart_data')
+                for item in cart_data:
+                    if item['id'] == instance.id:
+                        item['quantity'] = serializer.validated_data.get('quantity', item['quantity'])
+                        request.session['cart_data'] = cart_data
+                        break
+                else:
+                    return Response({"error": "Item not found in session"}, status=status.HTTP_404_NOT_FOUND)
+
         except:
             return Response({"error": "Item was not updated in database"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({"message": "The item was updated successfully"}, status=status.HTTP_200_OK)
 
 
-class BuyerDeleteCartItemView(generics.DestroyAPIView, QuerySetForCartMixin):
-    serializer_class = BuyerProductAddSerializer
+class BuyerDeleteCartItemView(ObjectRetrievalForCartMixin, generics.DestroyAPIView):
 
-    def get_queryset(self):
-        return self.get_queryset_by_user(self.request)
+    def delete(self, request, *args, **kwargs):
+        instance = self.handle_object_retrieval()
+        logger.info(f" This is the delete view :{instance}")
+        try:
+            if request.user.is_authenticated:
+                instance.delete()
+            else:
+                cart_data = request.session.get('cart_data')
+                for item in cart_data:
+                    if item['id'] == instance.id:
+                        cart_data.remove(item)  # Remove the item from cart_data
+                        request.session['cart_data'] = cart_data  # Update session with modified cart_data
+                        break
+                else:
+                    return Response({"error": "Item not found in session"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "Item was deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except Exception as E:
+            return Response({"error": f"Delete operation failed with exception {E}"},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class BuyerCheckoutView(generics.GenericAPIView, QuerySetForCartMixin):
@@ -119,27 +138,30 @@ class BuyerCheckoutView(generics.GenericAPIView, QuerySetForCartMixin):
     '''
 
     def get(self, request, *args, **kwargs):
-        cart_items = self.get_queryset_by_user(self.request.user)
+        cart_items = self.get_queryset_by_user(self.request)
         # If the cart is non-empty this is run
         if cart_items:
-            # If the user is logged in then saving the bought items to order_history
-            if request.user.is_authenticated:
-                for item in cart_items:
-                    OrderHistory.objects.create(
-                        buyer=item.buyer,
-                        quantity=item.quantity,
-                        product_name=item.product.title,
-                        product_image=item.product.image,
-                        product_discount=item.product.discount,
-                        product_seller=item.product.owner.username
-                    )
             # Incrementing the n_bought of the product attribute of the item by the qunatity bought
             for item in cart_items:
                 item.product.n_bought += item.quantity
                 item.product.save()
 
-            # Emptying the cart associated to the user
-            cart_items.delete()
+                # Emptying the cart associated to the user
+                # If the user is logged in then saving the bought items to order_history
+                if request.user.is_authenticated:
+                    for item in cart_items:
+                        OrderHistory.objects.create(
+                            buyer=item.buyer,
+                            quantity=item.quantity,
+                            product_name=item.product.title,
+                            product_image=item.product.image,
+                            product_discount=item.product.discount,
+                            product_seller=item.product.owner.username
+                        )
+                    cart_items.delete()
+                else:
+                    # If the user is not authenticated, clear the cart from the session
+                    request.session.pop('cart_data', None)
             return Response({"message": "Order was placed"}, status.HTTP_200_OK)
         else:
             return Response({"message": "Cart is empty"}, status.HTTP_204_NO_CONTENT)
