@@ -44,6 +44,7 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
 
     def test_passed_retrieving_empty_cart_for_no_added_product(self):
         res = self.client.get(self.cart_list_url)
+        self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data, [])
 
     def test_passed_retrieving_products(self):
@@ -54,13 +55,23 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
         self.assertEqual(len(res.data), 1)
 
     def test_passed_updating_existent_product(self):
-        pass
+        self.add_product_to_cart()
+        res = self.client.put(self.get_cart_update_url(1), data={"quantity": 70}, format="json")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(self.client.session['cart_data'][0]['quantity'], 70)
 
     def test_passed_deleting_existent_product(self):
-        pass
+        self.add_product_to_cart()
+        res = self.client.delete(self.get_cart_delete_url(1))
+        self.assertEqual(res.status_code, 204)
 
     def test_passed_checking_out_with_products(self):
-        pass
+        self.add_product_to_cart()
+        res1 = self.client.get(self.checkout_url)
+        self.assertEqual(res1.status_code, 200)
+        res2 =self.client.get(self.cart_list_url)
+        self.assertEqual(res2.status_code, 200)
+        self.assertEqual(res2.data, [])
 
 
 class TestBuyerCartViewsForAuthenticatedBuyer(TestSampleProductsForBuyerViewsSetup):
