@@ -173,12 +173,12 @@ class TestSetupAuthenticationHeadersForSellerAndBuyer(TestSetupSimpleUserRegiste
         encoded_credentials_seller_1 = self.encode_user_credentials(self.seller_user_data_1['username'],
                                                                     self.seller_user_data_1['password'])
         encoded_credentials_buyer_1 = self.encode_user_credentials(self.buyer_user_data_1['username'],
-                                                                   self.seller_user_data_1['password'])
+                                                                   self.buyer_user_data_1['password'])
         # Encoding credentials for other set of buyer and seller
         encoded_credentials_seller_2 = self.encode_user_credentials(self.seller_user_data_2['username'],
                                                                     self.seller_user_data_2['password'])
         encoded_credentials_buyer_2 = self.encode_user_credentials(self.buyer_user_data_2['username'],
-                                                                   self.seller_user_data_2['password'])
+                                                                   self.buyer_user_data_2['password'])
 
         # Sending the request and storing the access_tokens
         res_seller_1 = self.send_login_request(encoded_credentials_seller_1, self.seller_user_data_1['is_buyer'],

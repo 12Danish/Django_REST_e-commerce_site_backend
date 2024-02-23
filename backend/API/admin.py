@@ -10,7 +10,7 @@ class ReviewInline(admin.StackedInline):
 class ProductAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'title', 'owner', 'category', 'price', 'n_bought', 'discount', 'date_created', 'sale_item', 'sale_price',
-        'popular')
+        )
     inlines = [ReviewInline]
 
 

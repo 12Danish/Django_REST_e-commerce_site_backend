@@ -20,3 +20,6 @@ class TestSetupSellerViews(TestSetupAuthenticationHeadersForSellerAndBuyer):
     @staticmethod
     def get_seller_RUD_url(product_id):
         return reverse("Seller:product-retrieve", kwargs={'pk': product_id})
+
+
+
