@@ -36,7 +36,7 @@ class TestSampleProductsForBuyerViewsSetup(TestSetupSellerViews):
 
     @staticmethod
     def get_cart_update_url(product_num):
-        return reverse("cart-update", kwargs={'pk': product_num})
+        return reverse("Buyer:cart-update", kwargs={'pk': product_num})
 
     def create_sample_products(self):
         self.product_ids = []

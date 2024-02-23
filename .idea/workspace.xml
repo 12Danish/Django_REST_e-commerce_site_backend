@@ -5,10 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ce78a9bb-82d8-4be5-b2e2-bc0ea3b9baf2" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/Buyer/tests/test_cart_views_Buyer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/Buyer/buyer_cart_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Buyer/buyer_cart_views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Buyer/mixins.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Buyer/mixins.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/backend/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backend/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/Buyer/tests/test_buyer_cart_views_Buyer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/Buyer/tests/test_setup_Buyer.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Buyer/tests/test_setup_Buyer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/backend/db.sqlite3" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -39,7 +40,7 @@
     &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Sheryar/PycharmProjects/weather_app&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Sheryar/PycharmProjects/Pythonstuff&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>

@@ -1,7 +1,9 @@
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from API.mixins import BuyerPermissionMixin, AuthenticationMixin
+from API.models import Product
 from .models import Cart, OrderHistory
 from .mixins import QuerySetForCartMixin, ObjectRetrievalForCartMixin
 from .serializers import BuyerProductAddSerializer, BuyerOrderHistorySerializer, BuyerCartListSerializer
@@ -46,34 +48,37 @@ class BuyerCartAddItemView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         product_id = kwargs.get('pk')
-        post_data_serializer = self.get_serializer(data=request.data)
-        if post_data_serializer.is_valid():
-            product_data = {'product_id': product_id, 'quantity': post_data_serializer.validated_data['quantity']}
-            return_data = {}
-            # Handling the case for authenticated users
-            if self.request.user.is_authenticated:
-                new_item = Cart.objects.create(
-                    buyer=self.request.user,
-                    **product_data)
-                return_data['cart_item_id'] = new_item.id
-                num_of_items = enumerate(Cart.objects.filter(buyer=self.request.user))
+        if Product.objects.filter(id=product_id).exists():
+            post_data_serializer = self.get_serializer(data=request.data)
+            if post_data_serializer.is_valid():
+                product_data = {'product_id': product_id, 'quantity': post_data_serializer.validated_data['quantity']}
+                return_data = {}
+                # Handling the case for authenticated users
+                if self.request.user.is_authenticated:
+                    new_item = Cart.objects.create(
+                        buyer=self.request.user,
+                        **product_data)
+                    return_data['cart_item_id'] = new_item.id
+                    num_of_items = enumerate(Cart.objects.filter(buyer=self.request.user))
 
-            # Handling the case for unauthenticated users
-            else:
-                cart_data = request.session.get('cart_data', [])
-                last_id = max([item.get('id', 0) for item in cart_data], default=0)
-                new_id = last_id + 1
-                product_data['id'] = new_id
-                return_data['cart_item_id'] = new_id
-                cart_data.append(product_data)
-                num_of_items = len(cart_data)
-                self.request.session['cart_data'] = cart_data
-            return_data['total_items'] = num_of_items
-            return Response(
-                return_data,
-                status=status.HTTP_201_CREATED)
+                # Handling the case for unauthenticated users
+                else:
+                    cart_data = request.session.get('cart_data', [])
+                    last_id = max([item.get('id', 0) for item in cart_data], default=0)
+                    new_id = last_id + 1
+                    product_data['id'] = new_id
+                    return_data['cart_item_id'] = new_id
+                    cart_data.append(product_data)
+                    num_of_items = len(cart_data)
+                    self.request.session['cart_data'] = cart_data
+                return_data['total_items'] = num_of_items
+                return Response(
+                    return_data,
+                    status=status.HTTP_201_CREATED)
 
-        return Response({"error": "adding item to cart unsuccessful"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "adding item to cart unsuccessful"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "No such item exists"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class BuyerUpdateCartItemView(ObjectRetrievalForCartMixin, generics.RetrieveUpdateAPIView):
