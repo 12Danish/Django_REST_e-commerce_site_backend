@@ -1,3 +1,5 @@
+import pdb
+
 from django.db.models import Q, QuerySet
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -18,7 +20,10 @@ class QuerySetForCartMixin:
     '''
 
     def get_queryset_by_user(self, request):
+
         if request.user.is_authenticated:
+            logger.info(Cart.objects.filter(buyer=request.user))
+
             return Cart.objects.filter(buyer=request.user)
         elif request.COOKIES.get('sessionid'):
             cart_data = request.session.get('cart_data')
@@ -45,6 +50,7 @@ class ObjectRetrievalForCartMixin(QuerySetForCartMixin):
     This class is responsible for retrieving the object from the Cart model in the db
     or from th session
     """
+
     def handle_object_retrieval(self):
         return self.get_object()
 
@@ -52,6 +58,7 @@ class ObjectRetrievalForCartMixin(QuerySetForCartMixin):
         return self.get_queryset_by_user(self.request)
 
         # Getting the object with the id specified from the frontend
+
     def get_object(self):
         queryset = self.get_queryset()
         logger.info(f"Update view{queryset} {self.kwargs.get('pk')}")

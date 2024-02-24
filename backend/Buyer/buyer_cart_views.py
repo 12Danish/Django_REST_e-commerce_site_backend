@@ -1,7 +1,9 @@
+import pdb
+
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
+
 from API.mixins import BuyerPermissionMixin, AuthenticationMixin
 from API.models import Product
 from .models import Cart, OrderHistory
@@ -25,8 +27,9 @@ when a user logs in and has a valid session the data from it is transferred to t
 '''
 
 
-class BuyerListCartItemView(generics.ListAPIView, QuerySetForCartMixin):
+class BuyerListCartItemView(AuthenticationMixin, generics.ListAPIView, QuerySetForCartMixin):
     serializer_class = BuyerCartListSerializer
+
     '''
     This view is responsible for getting the cart items for authenticated users as well as 
     anonymous users
@@ -36,7 +39,7 @@ class BuyerListCartItemView(generics.ListAPIView, QuerySetForCartMixin):
         return self.get_queryset_by_user(self.request)
 
 
-class BuyerCartAddItemView(generics.CreateAPIView):
+class BuyerCartAddItemView(AuthenticationMixin, generics.CreateAPIView):
     '''
     This  view is responsible for both adding a cart_item
     It adds cart Items to the cart model for authenticated users
@@ -55,11 +58,13 @@ class BuyerCartAddItemView(generics.CreateAPIView):
                 return_data = {}
                 # Handling the case for authenticated users
                 if self.request.user.is_authenticated:
+
                     new_item = Cart.objects.create(
                         buyer=self.request.user,
                         **product_data)
                     return_data['cart_item_id'] = new_item.id
-                    num_of_items = enumerate(Cart.objects.filter(buyer=self.request.user))
+                    num_of_items = Cart.objects.filter(buyer=self.request.user).count()
+
 
                 # Handling the case for unauthenticated users
                 else:
@@ -72,6 +77,7 @@ class BuyerCartAddItemView(generics.CreateAPIView):
                     num_of_items = len(cart_data)
                     self.request.session['cart_data'] = cart_data
                 return_data['total_items'] = num_of_items
+
                 return Response(
                     return_data,
                     status=status.HTTP_201_CREATED)
@@ -81,7 +87,7 @@ class BuyerCartAddItemView(generics.CreateAPIView):
             return Response({"error": "No such item exists"}, status=status.HTTP_404_NOT_FOUND)
 
 
-class BuyerUpdateCartItemView(ObjectRetrievalForCartMixin, generics.RetrieveUpdateAPIView):
+class BuyerUpdateCartItemView(AuthenticationMixin, ObjectRetrievalForCartMixin, generics.RetrieveUpdateAPIView):
     serializer_class = BuyerProductAddSerializer
 
     # Performing the update action
@@ -112,7 +118,7 @@ class BuyerUpdateCartItemView(ObjectRetrievalForCartMixin, generics.RetrieveUpda
         return Response({"message": "The item was updated successfully"}, status=status.HTTP_200_OK)
 
 
-class BuyerDeleteCartItemView(ObjectRetrievalForCartMixin, generics.DestroyAPIView):
+class BuyerDeleteCartItemView(AuthenticationMixin, ObjectRetrievalForCartMixin, generics.DestroyAPIView):
 
     def delete(self, request, *args, **kwargs):
         instance = self.handle_object_retrieval()
@@ -135,7 +141,7 @@ class BuyerDeleteCartItemView(ObjectRetrievalForCartMixin, generics.DestroyAPIVi
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class BuyerCheckoutView(generics.GenericAPIView, QuerySetForCartMixin):
+class BuyerCheckoutView(AuthenticationMixin, generics.GenericAPIView, QuerySetForCartMixin):
     '''This view will handle the checkout logic.
     It will call another class for sending emails and generating a pdf receipt.
     It will save all the items to the order_history model if the user is authenticated.
@@ -172,12 +178,10 @@ class BuyerCheckoutView(generics.GenericAPIView, QuerySetForCartMixin):
             return Response({"message": "Cart is empty"}, status.HTTP_204_NO_CONTENT)
 
 
-class BuyerOrderHistory(AuthenticationMixin, generics.ListAPIView, BuyerPermissionMixin):
+class BuyerOrderHistory(AuthenticationMixin, BuyerPermissionMixin, generics.ListAPIView):
     serializer_class = BuyerOrderHistorySerializer
 
     def get_queryset(self):
-        if not self.request.user.is_authenticated:
-            raise PermissionDenied("Authentication required for this action.")
         return OrderHistory.objects.filter(buyer=self.request.user)
 
     def handle_exception(self, exc):

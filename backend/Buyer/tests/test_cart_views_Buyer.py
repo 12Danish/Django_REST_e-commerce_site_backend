@@ -1,4 +1,4 @@
-import json
+import pdb
 
 from .test_setup_Buyer import TestSampleProductsForBuyerViewsSetup
 from django.test import Client
@@ -36,6 +36,12 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
         res = self.client.get(self.checkout_url)
         self.assertEqual(res.status_code, 204)
 
+    def test_failed_accessing_order_history_without_login(self):
+        self.add_product_to_cart()
+        self.client.get(self.checkout_url)
+        res = self.client.get(self.order_history_url)
+        self.assertEqual(res.status_code, 401)
+
     def test_passed_adding_products_to_cart(self):
         self.add_product_to_cart()
         self.assertIn('cart_data', self.client.session)
@@ -69,10 +75,60 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
         self.add_product_to_cart()
         res1 = self.client.get(self.checkout_url)
         self.assertEqual(res1.status_code, 200)
-        res2 =self.client.get(self.cart_list_url)
+        res2 = self.client.get(self.cart_list_url)
         self.assertEqual(res2.status_code, 200)
         self.assertEqual(res2.data, [])
 
 
 class TestBuyerCartViewsForAuthenticatedBuyer(TestSampleProductsForBuyerViewsSetup):
-    pass
+    def add_product_to_cart(self, product_id, quantity, headers_for_buyer):
+        data = {"quantity": quantity}
+        res = self.client.post(self.get_cart_add_url(self.product_ids[product_id]), data=data, format="json",
+                               headers=headers_for_buyer)
+        logger.info(f"Posting for client {res.status_code} {res.data}")
+        return res
+
+    def test_passed_adding_products_to_cart(self):
+        res = self.add_product_to_cart(product_id=0, quantity=7, headers_for_buyer=self.buyer_headers_1)
+        self.assertEqual(res.status_code, 201)
+
+    def test_passed_retrieving_relevant_items(self):
+        self.add_product_to_cart(product_id=6, quantity=89, headers_for_buyer=self.buyer_headers_1)
+        self.add_product_to_cart(product_id=0, quantity=7, headers_for_buyer=self.buyer_headers_2)
+        res1 = self.client.get(self.cart_list_url, headers=self.buyer_headers_1)
+        logger.info(f"This is the first buyer {res1.data}")
+        res2 = self.client.get(self.cart_list_url, headers=self.buyer_headers_2)
+        logger.info(f"This is the second buyer {res2.data}")
+        self.assertEqual(res1.status_code, 200)
+        self.assertEqual(89, res1.data[0]['quantity'])
+        self.assertEqual(res2.status_code, 200)
+        self.assertEqual(7, res2.data[0]['quantity'])
+
+    def test_passed_updating_products(self):
+        self.add_product_to_cart(product_id=6, quantity=89, headers_for_buyer=self.buyer_headers_1)
+        res = self.client.put(self.get_cart_update_url(1), data={"quantity": 70}, format="json",
+                              headers=self.buyer_headers_1)
+        self.assertEqual(res.status_code, 200)
+
+    def test_passed_deleting_product_by_user(self):
+        self.add_product_to_cart(product_id=6, quantity=89, headers_for_buyer=self.buyer_headers_1)
+        self.add_product_to_cart(product_id=0, quantity=7, headers_for_buyer=self.buyer_headers_2)
+        res1_del = self.client.delete(self.get_cart_delete_url(1), headers=self.buyer_headers_1)
+        self.assertEqual(res1_del.status_code, 204)
+        res1_get = self.client.get(self.cart_list_url, headers=self.buyer_headers_1)
+        self.assertEqual(len(res1_get.data), 0)
+        res2_get = self.client.get(self.cart_list_url, headers=self.buyer_headers_2)
+        self.assertNotEqual(len(res2_get.data), 0)
+
+    def test_passed_checking_out_and_viewing_order_history(self):
+        self.add_product_to_cart(product_id=6, quantity=89, headers_for_buyer=self.buyer_headers_1)
+        res1 = self.client.get(self.checkout_url, headers=self.buyer_headers_1)
+        self.assertEqual(res1.status_code, 200)
+        # Checking the cart is empty
+        res1_check = self.client.get(self.cart_list_url, headers=self.buyer_headers_1)
+        self.assertEqual(res1_check.status_code, 200)
+        self.assertEqual(res1_check.data, [])
+        # Checking that order history has been made
+        res2 = self.client.get(self.order_history_url, headers=self.buyer_headers_1)
+        self.assertEqual(res2.status_code, 200)
+        self.assertEqual(len(res2.data), 1)
