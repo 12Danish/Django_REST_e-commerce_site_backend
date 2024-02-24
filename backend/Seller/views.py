@@ -30,7 +30,6 @@ class SellerProductListView(AuthenticationMixin, SellerPermissionMixin, generics
             qs = qs.search(search, self.request.user)
         return qs
 
-    # This is the view for creating a product
 
 
 class SellerProductCreateView(AuthenticationMixin, SellerPermissionMixin, generics.CreateAPIView):

@@ -4,7 +4,6 @@ from API.mixins import BuyerPermissionMixin
 from API.review_serializers import ReviewSerializer
 from API.models import Product, Review
 from API.mixins import AuthenticationMixin
-from API.permissions import IsBuyerPermission
 import logging
 
 # Configuring the django logging to log even the basic things

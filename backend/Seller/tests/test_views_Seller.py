@@ -116,6 +116,19 @@ class TestSellerListView(TestSetupSellerViews):
 
     def setUp(self) -> None:
         super().setUp()
+        self.product_data1 = {
+            'title': fake.name(),
+            'price': random.randint(2, 10000),
+            'description': fake.name(),
+            'discount': 5
+        }
+
+        self.product_data2 = {
+            'title': fake.name(),
+            'price': random.randint(2, 10000),
+            'description': fake.name(),
+            'discount': 5
+        }
 
     def test_empty_set_returned_with_no_published_products(self):
         res = self.client.get(self.seller_homepage_url, headers=self.seller_headers_1)
@@ -123,13 +136,7 @@ class TestSellerListView(TestSetupSellerViews):
         self.assertEqual(res.data, [])
 
     def test_empty_set_returned_for_no_published_products_even_with_other_sellers_with_products(self):
-        data = {
-            'title': fake.name(),
-            'price': random.randint(2, 10000),
-            'description': fake.name(),
-            'discount': 5
-        }
-        self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=data,
+        self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=self.product_data1,
                          format='multipart')
 
         res = self.client.get(self.seller_homepage_url, headers=self.seller_headers_2)
@@ -137,32 +144,30 @@ class TestSellerListView(TestSetupSellerViews):
         self.assertEqual(res.data, [])
 
     def test_relevant_data_returned_only(self):
-        data1 = {
-            'title': fake.name(),
-            'price': random.randint(2, 10000),
-            'description': fake.name(),
-            'discount': 5
-        }
-
-        data2 = {
-            'title': fake.name(),
-            'price': random.randint(2, 10000),
-            'description': fake.name(),
-            'discount': 5
-        }
-        self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=data1,
+        self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=self.product_data1,
                          format='multipart')
 
-        self.client.post(self.seller_create_product_url, headers=self.seller_headers_2, data=data2,
+        self.client.post(self.seller_create_product_url, headers=self.seller_headers_2, data=self.product_data2,
                          format='multipart')
 
         res1 = self.client.get(self.seller_homepage_url, headers=self.seller_headers_1)
         self.assertEqual(res1.status_code, 200)
-        self.assertEqual(data1['title'], res1.data[0]['title'])
+        self.assertEqual(self.product_data1['title'], res1.data[0]['title'])
         res2 = self.client.get(self.seller_homepage_url, headers=self.seller_headers_2)
         self.assertEqual(res2.status_code, 200)
 
-        self.assertEqual(data2['title'], res2.data[0]['title'])
+        self.assertEqual(self.product_data2['title'], res2.data[0]['title'])
+
+    def test_specified_data_returned_only(self):
+        self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=self.product_data1,
+                         format='multipart')
+        self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=self.product_data2,
+                         format='multipart')
+
+        res = self.client.get(self.seller_homepage_url + "?search=a", headers=self.seller_headers_1)
+        logger.info(res.data)
+        for product_data in res.data:
+            self.assertIn('a', product_data['title'].lower())
 
 
 class TestSellerRUDViews(TestSetupSellerViews):
