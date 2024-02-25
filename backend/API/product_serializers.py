@@ -114,21 +114,22 @@ class ProductCreateSerializer(serializers.ModelSerializer):
             'category'
         ]
 
-    def validate(self, attrs, *args, **kwargs):
-        if attrs.get('price') < 0 or (attrs.get('discount') and attrs.get('discount') < 0):
-            raise ValidationError
-        request = self.context.get('request')
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add_title_validator(*args,**kwargs)
 
-        # Dynamically setting the queryset of the UniqueValidator based on the request user
+    def add_title_validator(self,*args,**kwargs):
+        request = self.context.get('request')
         if request and request.user:
             self.fields['title'].validators.append(
                 UniqueValidator(
                     queryset=Product.objects.filter(owner=request.user),
-                    message='Product with this title already exists for this user.'
+                    message='Product with this title already exists for this user.',
+                    lookup='iexact'  # Make the comparison case-insensitive
                 )
             )
-        else:
-            # Fallback if request or request.user is not provided
-            raise ValueError('Request or user not provided.')
 
+    def validate(self, attrs):
+        if attrs.get('price', 0) < 0 or (attrs.get('discount', 0) and attrs.get('discount', 0) < 0):
+            raise serializers.ValidationError("Price or discount cannot be negative.")
         return attrs
