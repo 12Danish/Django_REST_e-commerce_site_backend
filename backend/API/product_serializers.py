@@ -98,7 +98,7 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         '''
 
     # Having a validator to ensure that each product name is unique
-    title = serializers.CharField(max_length=200, validators=[UniqueValidator(queryset=Product.objects.all())])
+    title = serializers.CharField(max_length=200)
     id = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
@@ -114,7 +114,21 @@ class ProductCreateSerializer(serializers.ModelSerializer):
             'category'
         ]
 
-    def validate(self, attrs):
+    def validate(self, attrs, *args, **kwargs):
         if attrs.get('price') < 0 or (attrs.get('discount') and attrs.get('discount') < 0):
             raise ValidationError
+        request = self.context.get('request')
+
+        # Dynamically setting the queryset of the UniqueValidator based on the request user
+        if request and request.user:
+            self.fields['title'].validators.append(
+                UniqueValidator(
+                    queryset=Product.objects.filter(owner=request.user),
+                    message='Product with this title already exists for this user.'
+                )
+            )
+        else:
+            # Fallback if request or request.user is not provided
+            raise ValueError('Request or user not provided.')
+
         return attrs

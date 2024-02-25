@@ -41,6 +41,11 @@ class SellerProductCreateView(AuthenticationMixin, SellerPermissionMixin, generi
     def perform_create(self, serializer):
         return serializer.save(owner=self.request.user)
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
 
 # This view handles the logic for retrieving, updating and deleting products
 class SellerProductRUDView(AuthenticationMixin, SellerPermissionMixin, generics.RetrieveUpdateDestroyAPIView):
