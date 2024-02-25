@@ -83,6 +83,15 @@ class TestSellerCreateProductView(TestSetupSellerViews):
                                format='multipart')
         self.assertEqual(res.status_code, 400)
 
+    def test_failed_registering_with_same_name_twice(self):
+        data = self.complete_product_information_for_registration()
+        res1 = self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=data,
+                               format='multipart')
+        self.assertEqual(res1.status_code, 201)
+        res2 = self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=data,
+                                format='multipart')
+        self.assertEqual(res2.status_code, 400)
+
     def test_passed_with_complete_information(self):
         data = self.complete_product_information_for_registration()
         res = self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=data,
