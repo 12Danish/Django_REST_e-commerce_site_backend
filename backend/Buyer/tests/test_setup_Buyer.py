@@ -8,7 +8,18 @@ from Seller.tests.test_views_Seller import TestSellerCreateProductView
 fake = Faker()
 
 
-class TestSampleProductsForBuyerViewsSetup(TestSetupSellerViews):
+class TestCreateProductMixin:
+    def create_sample_products(self):
+        self.product_ids = []
+        for x in range(10):
+            res = self.client.post(self.seller_create_product_url,
+                                   headers=random.choice([self.seller_headers_1, self.seller_headers_2]),
+                                   data=TestSellerCreateProductView.complete_product_information_for_registration(),
+                                   format='multipart')
+            self.product_ids.append(res.data['id'])
+
+
+class TestSampleProductsForBuyerViewsSetup(TestSetupSellerViews, TestCreateProductMixin):
 
     def setUp(self) -> None:
         super().setUp()
@@ -38,15 +49,6 @@ class TestSampleProductsForBuyerViewsSetup(TestSetupSellerViews):
     def get_cart_update_url(product_num):
         return reverse("Buyer:cart-update", kwargs={'pk': product_num})
 
-    def create_sample_products(self):
-        self.product_ids = []
-        for x in range(10):
-            res = self.client.post(self.seller_create_product_url,
-                                   headers=random.choice([self.seller_headers_1, self.seller_headers_2]),
-                                   data=TestSellerCreateProductView.complete_product_information_for_registration(),
-                                   format='multipart')
-            self.product_ids.append(res.data['id'])
-
     @staticmethod
     def get_review_data():
         return {
@@ -54,3 +56,9 @@ class TestSampleProductsForBuyerViewsSetup(TestSetupSellerViews):
             "name": fake.user_name(),
             "body": fake.paragraph(nb_sentences=10)
         }
+
+
+class TestSetupBuyerSerializers(TestSetupSellerViews,TestCreateProductMixin):
+    def setUp(self) -> None:
+        super().setUp()
+        self.create_sample_products()

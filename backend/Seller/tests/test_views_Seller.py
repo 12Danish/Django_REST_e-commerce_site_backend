@@ -198,6 +198,7 @@ class TestSellerRUDViews(TestSetupSellerViews):
     def test_successful_in_retrieving_existent_data(self):
         res = self.client.get(self.get_seller_RUD_url(self.product_id), headers=self.seller_headers_1)
         self.assertEqual(res.status_code, 200)
+        self.assertNotEqual(res.data, [])
         self.assertEqual(res.data['id'], self.product_id)
 
     def test_successful_in_updating_existent_data(self):

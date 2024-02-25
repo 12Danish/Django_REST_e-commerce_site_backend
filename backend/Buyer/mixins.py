@@ -1,6 +1,6 @@
 import pdb
 
-from django.db.models import Q, QuerySet
+from django.db.models import  QuerySet
 from rest_framework import generics, status
 from rest_framework.response import Response
 

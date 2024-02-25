@@ -1,6 +1,5 @@
 from django.db.models import PositiveIntegerField
 from rest_framework import serializers
-from API.models import Product
 from .models import OrderHistory, Cart
 
 
@@ -8,7 +7,7 @@ class BuyerProductAddSerializer(serializers.Serializer):
     '''
     This serializer will be used to store both the order history and the cart Data
     '''
-    quantity = serializers.IntegerField(write_only=True)
+    quantity = serializers.IntegerField(write_only=True, default=1)
 
 
 class BuyerCartListSerializer(serializers.Serializer):
