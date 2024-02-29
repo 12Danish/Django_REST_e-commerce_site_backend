@@ -1,4 +1,3 @@
-from rest_framework.exceptions import ValidationError
 from rest_framework.fields import DateTimeField
 from rest_framework.utils.serializer_helpers import ReturnDict
 
@@ -36,7 +35,7 @@ class ProductListSerializer(serializers.ModelSerializer):
         ]
 
     @staticmethod
-    def get_date_created(obj):
+    def get_date_created(obj:Product):
         return ProductDetailSerializer.get_date_created(obj)
 
     # Getting the url based on the user who is logged in
@@ -116,9 +115,9 @@ class ProductCreateSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.add_title_validator(*args,**kwargs)
+        self.add_title_validator(*args, **kwargs)
 
-    def add_title_validator(self,*args,**kwargs):
+    def add_title_validator(self, *args, **kwargs):
         request = self.context.get('request')
         if request and request.user:
             self.fields['title'].validators.append(

@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AnonymousUser
 from rest_framework import serializers
 
 
@@ -24,3 +25,17 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
     is_seller = serializers.BooleanField()
     is_buyer = serializers.BooleanField()
+
+
+class UserInfoSerializer(serializers.Serializer):
+    '''
+    This serialzer is used within the checkout view of the buyer
+    '''
+    first_name = serializers.CharField(max_length=100)
+    last_name = serializers.CharField(max_length=100)
+    email = serializers.EmailField()
+    phone_number = serializers.CharField(max_length=14)
+    address = serializers.CharField(max_length=1000)
+    street = serializers.CharField(max_length=100, allow_null=True, allow_blank=True)
+    neighbourhood = serializers.CharField(max_length=150)
+    city = serializers.CharField(max_length=100)

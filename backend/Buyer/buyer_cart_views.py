@@ -4,6 +4,8 @@ from rest_framework.response import Response
 
 from API.mixins import BuyerPermissionMixin, AuthenticationMixin
 from API.models import Product
+from UserManagement.serializers import UserInfoSerializer
+from UserManagement.models import UserInfo
 from .models import Cart, OrderHistory
 from .mixins import QuerySetForCartMixin, ObjectRetrievalForCartMixin
 from .serializers import BuyerProductAddSerializer, BuyerOrderHistorySerializer, BuyerCartListSerializer
@@ -145,35 +147,80 @@ class BuyerCheckoutView(AuthenticationMixin, generics.GenericAPIView, QuerySetFo
     It will save all the items to the order_history model if the user is authenticated.
     It will delete all the items from the cart.
     '''
+    serializer_class = UserInfoSerializer
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         cart_items = self.get_queryset_by_user(self.request)
+        serializer = self.get_serializer(data=self.request.data)
         # If the cart is non-empty this is run
         if cart_items:
-            # Incrementing the n_bought of the product attribute of the item by the qunatity bought
-            for item in cart_items:
-                item.product.n_bought += item.quantity
-                item.product.save()
+            if serializer.is_valid():
+                # Incrementing the n_bought of the product attribute of the item by the qunatity bought
+                for item in cart_items:
+                    item.product.n_bought += item.quantity
+                    item.product.save()
 
-                # Emptying the cart associated to the user
-                # If the user is logged in then saving the bought items to order_history
-                if request.user.is_authenticated:
-                    for item in cart_items:
-                        OrderHistory.objects.create(
-                            buyer=item.buyer,
-                            quantity=item.quantity,
-                            product_name=item.product.title,
-                            product_image=item.product.image,
-                            product_discount=item.product.discount,
-                            product_seller=item.product.owner.username
-                        )
-                    cart_items.delete()
-                else:
-                    # If the user is not authenticated, clear the cart from the session
-                    request.session.pop('cart_data', None)
-            return Response({"message": "Order was placed"}, status.HTTP_200_OK)
+                    # Emptying the cart associated to the user
+                    # If the user is logged in then saving the bought items to order_history
+                    if request.user.is_authenticated:
+                        for item in cart_items:
+                            OrderHistory.objects.create(
+                                buyer=item.buyer,
+                                quantity=item.quantity,
+                                product_name=item.product.title,
+                                product_image=item.product.image,
+                                product_discount=item.product.discount,
+                                product_seller=item.product.owner.username
+                            )
+                        cart_items.delete()
+                        user_data = UserInfo.objects.filter(user=request.user).first()
+                        if not user_data:
+                            user_data = UserInfo.objects.create(
+                                user=self.request.user,
+                                phone_num=serializer.validated_data['phone_num'],
+                                address=serializer.validated_data['address'],
+                                street=serializer.validated_data['street'],
+                                city=serializer.validated_data['city'],
+                                neighbourhood=serializer.validated_data['neighbourhood']
+                            )
+                        BuyerCheckoutView.check_user_info_change(serializer.validated_data, user_data)
+
+
+                    else:
+                        # If the user is not authenticated, clear the cart from the session
+                        request.session.pop('cart_data', None)
+                return Response({"message": "Order was placed"}, status.HTTP_200_OK)
+            else:
+                return Response({"error": "User Data in invalid format please follow the required format"},
+                                status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"message": "Cart is empty"}, status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def check_user_info_change(data, user_data: UserInfo):
+        # Check if User model  fields are changed
+        if (
+                data.get('first_name') != user_data.user.first_name or
+                data.get('last_name') != user_data.user.last_name or
+                data.get('email') != user_data.user.email
+        ):
+            user_data.user.first_name = data.get('first_name', user_data.user.first_name)
+            user_data.user.last_name = data.get('last_name', user_data.user.last_name)
+            user_data.user.email = data.get('email', user_data.user.email)
+            user_data.user.save()
+        elif (
+                data.get('phone_num') != user_data.phone_num or
+                data.get('address') != user_data.address or
+                data.get('neighbourhood') != user_data.neighbourhood or
+                data.get('street') != user_data.street or
+                data.get('city') != user_data.city
+        ):
+            user_data.phone_num = data.get('phone_num')
+            user_data.address = data.get('address')
+            user_data.city = data.get('city')
+            user_data.neighbourhood = data.get('neighbourhood')
+            user_data.street = data.get('street')
+            user_data.user.save()
 
 
 class BuyerOrderHistory(AuthenticationMixin, BuyerPermissionMixin, generics.ListAPIView):
