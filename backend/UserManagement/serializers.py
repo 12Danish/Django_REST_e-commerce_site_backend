@@ -31,11 +31,11 @@ class UserInfoSerializer(serializers.Serializer):
     '''
     This serialzer is used within the checkout view of the buyer
     '''
-    first_name = serializers.CharField(max_length=100)
-    last_name = serializers.CharField(max_length=100)
+    first_name = serializers.CharField(max_length=1000)
+    last_name = serializers.CharField(max_length=1000)
     email = serializers.EmailField()
-    phone_num = serializers.CharField(max_length=14)
+    phone_num = serializers.CharField(max_length=20)
     address = serializers.CharField(max_length=1000)
     street = serializers.CharField(max_length=100, allow_null=True, allow_blank=True, required=False)
-    neighbourhood = serializers.CharField(max_length=150)
-    city = serializers.CharField(max_length=100)
+    neighbourhood = serializers.CharField(max_length=1500)
+    city = serializers.CharField(max_length=1000)

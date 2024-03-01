@@ -16,8 +16,8 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
 
     def add_product_to_cart(self):
         data = {"quantity": 10}
-        headers = {"Content-Type": "application/json"}
-        res = self.client.post(self.get_cart_add_url(self.product_ids[0]), data=data, format="json", headers=headers)
+        res = self.client.post(self.get_cart_add_url(self.product_ids[0]), data=data, format="json",
+                               headers=self.content_header)
         logger.info(f"Posting for client 1{res.status_code, res.data}")
 
     def test_failed_adding_non_existent_products_to_cart(self):
@@ -32,13 +32,11 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
         res = self.client.delete(self.get_cart_delete_url(2345))
         self.assertEqual(res.status_code, 404)
 
-    # def test_failed_checking_out_with_empty_cart(self):
-    #     res = self.client.get(self.checkout_url)
-    #     self.assertEqual(res.status_code, 204)
+    def test_failed_checking_out_with_empty_cart(self):
+        res = self.client.post(self.checkout_url, data=self.checkout_data, headers=self.content_header, format='json')
+        self.assertEqual(res.status_code, 404)
 
     def test_failed_accessing_order_history_without_login(self):
-        self.add_product_to_cart()
-        self.client.get(self.checkout_url)
         res = self.client.get(self.order_history_url)
         self.assertEqual(res.status_code, 401)
 
@@ -71,23 +69,22 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
         res = self.client.delete(self.get_cart_delete_url(1))
         self.assertEqual(res.status_code, 204)
 
-    # def test_passed_checking_out_with_products(self):
-    #     self.add_product_to_cart()
-    #     res1 = self.client.get(self.checkout_url)
-    #     self.assertEqual(res1.status_code, 200)
-    #     res2 = self.client.get(self.cart_list_url)
-    #     self.assertEqual(res2.status_code, 200)
-    #     self.assertEqual(res2.data, [])
-    #
+    def test_passed_empty_set_returned_for_unregistered_user_sending_get_req_to_checkout(self):
+        res = self.client.get(self.checkout_url)
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(res.data, [])
+
+    def test_passed_checking_out_with_products(self):
+        self.add_product_to_cart()
+        res1 = self.client.post(self.checkout_url, headers=self.content_header, data=self.checkout_data, format="json")
+        logger.info(res1.data)
+        self.assertEqual(res1.status_code, 200)
+        res2 = self.client.get(self.cart_list_url)
+        self.assertEqual(res2.status_code, 200)
+        self.assertEqual(res2.data, [])
 
 
 class TestBuyerCartViewsForAuthenticatedBuyer(TestSampleProductsForBuyerViewsSetup):
-    def add_product_to_cart(self, product_id, quantity, headers_for_buyer):
-        data = {"quantity": quantity}
-        res = self.client.post(self.get_cart_add_url(self.product_ids[product_id]), data=data, format="json",
-                               headers=headers_for_buyer)
-        logger.info(f"Posting for client {res.status_code} {res.data}")
-        return res
 
     def test_passed_adding_products_to_cart(self):
         res = self.add_product_to_cart(product_id=0, quantity=7, headers_for_buyer=self.buyer_headers_1)
@@ -121,15 +118,40 @@ class TestBuyerCartViewsForAuthenticatedBuyer(TestSampleProductsForBuyerViewsSet
         res2_get = self.client.get(self.cart_list_url, headers=self.buyer_headers_2)
         self.assertNotEqual(len(res2_get.data), 0)
 
-    # def test_passed_checking_out_and_viewing_order_history(self):
-    #     self.add_product_to_cart(product_id=6, quantity=89, headers_for_buyer=self.buyer_headers_1)
-    #     res1 = self.client.get(self.checkout_url, headers=self.buyer_headers_1)
-    #     self.assertEqual(res1.status_code, 200)
-    #     # Checking the cart is empty
-    #     res1_check = self.client.get(self.cart_list_url, headers=self.buyer_headers_1)
-    #     self.assertEqual(res1_check.status_code, 200)
-    #     self.assertEqual(res1_check.data, [])
-    #     # Checking that order history has been made
-    #     res2 = self.client.get(self.order_history_url, headers=self.buyer_headers_1)
-    #     self.assertEqual(res2.status_code, 200)
-    #     self.assertEqual(len(res2.data), 1)
+
+class TestCheckoutFunctionalityForAuthenticatedBuyer(TestSampleProductsForBuyerViewsSetup):
+    def setUp(self) -> None:
+        super().setUp()
+        self.add_product_to_cart(product_id=6, quantity=89, headers_for_buyer=self.buyer_headers_1)
+        self.res1_post = self.client.post(self.checkout_url, headers=self.buyer_headers_1, data=self.checkout_data,
+                                          format="json")
+        self.res1_check = self.client.get(self.cart_list_url, headers=self.buyer_headers_1)
+
+    def test_passed_checking_out_and_viewing_order_history(self):
+        self.assertEqual(self.res1_post.status_code, 200)
+        # Checking the cart is empty
+
+        self.assertEqual(self.res1_check.status_code, 200)
+        self.assertEqual(self.res1_check.data, [])
+        # Checking that order history has been made
+        order_his_res = self.client.get(self.order_history_url, headers=self.buyer_headers_1)
+        self.assertEqual(order_his_res.status_code, 200)
+        self.assertEqual(len(order_his_res.data), 1)
+
+    def test_passed_retrieving_user_info_using_get(self):
+        res_get = self.client.get(self.checkout_url, headers=self.buyer_headers_1)
+        self.assertEqual(res_get.status_code, 200)
+        self.assertNotEqual(res_get.data, [])
+
+    def test_passed_updating_data_from_checkout(self):
+        self.checkout_data["first_name"] = "Azha"
+        self.checkout_data["city"] = "Mumbai"
+
+        self.add_product_to_cart(product_id=1, quantity=79, headers_for_buyer=self.buyer_headers_1)
+
+        self.client.post(self.checkout_url, headers=self.buyer_headers_1, data=self.checkout_data,
+                         format="json")
+        res_get = self.client.get(self.checkout_url, headers=self.buyer_headers_1)
+        self.assertEqual(res_get.status_code, 200)
+        self.assertEqual(res_get.data['first_name'], "Azha")
+        self.assertEqual(res_get.data['city'], "Mumbai")

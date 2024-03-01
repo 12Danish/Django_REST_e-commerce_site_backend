@@ -20,6 +20,7 @@ class TestCreateProductMixin:
 
 
 class TestSampleProductsForBuyerViewsSetup(TestSetupSellerViews, TestCreateProductMixin):
+    content_header = {"Content-Type": "application/json"}
 
     def setUp(self) -> None:
         super().setUp()
@@ -28,6 +29,17 @@ class TestSampleProductsForBuyerViewsSetup(TestSetupSellerViews, TestCreateProdu
         self.checkout_url = reverse("Buyer:checkout")
         self.order_history_url = reverse("Buyer:order_history")
         self.create_sample_products()
+        self.checkout_data = {
+            "phone_num": fake.phone_number(),
+            "address": fake.address(),
+            "first_name": fake.first_name(),
+            "last_name": fake.last_name(),
+            "city": fake.city(),
+            "street": fake.street_name(),
+            "email": fake.email(),
+            "neighbourhood": fake.word(),
+        }
+
 
     @staticmethod
     def get_product_details_url(product_num):
@@ -57,8 +69,14 @@ class TestSampleProductsForBuyerViewsSetup(TestSetupSellerViews, TestCreateProdu
             "body": fake.paragraph(nb_sentences=10)
         }
 
+    def add_product_to_cart(self, product_id, quantity, headers_for_buyer):
+        data = {"quantity": quantity}
+        res = self.client.post(self.get_cart_add_url(self.product_ids[product_id]), data=data, format="json",
+                               headers=headers_for_buyer)
+        return res
 
-class TestSetupBuyerSerializers(TestSetupSellerViews,TestCreateProductMixin):
+
+class TestSetupBuyerSerializers(TestSetupSellerViews, TestCreateProductMixin):
     def setUp(self) -> None:
         super().setUp()
         self.create_sample_products()

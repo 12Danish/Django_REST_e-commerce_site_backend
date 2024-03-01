@@ -1,5 +1,7 @@
+import pdb
+
 from rest_framework import generics, status
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ParseError
 from rest_framework.response import Response
 
 from API.mixins import BuyerPermissionMixin, AuthenticationMixin
@@ -150,29 +152,37 @@ class BuyerCheckoutView(AuthenticationMixin, generics.GenericAPIView, QuerySetFo
     serializer_class = UserInfoSerializer
 
     def get(self, request):
-        user_data = UserInfo.objects.filter(user=request.user).first()
-        data = {
-            'first_name': user_data.user.first_name,
-            'last_name': user_data.user.last_name,
-            'email': user_data.user.email,
-            'phone_num': user_data.phone_num,
-            'address': user_data.address,
-            'street': user_data.street,
-            'neighbourhood': user_data.neighbourhood,
-            'city': user_data.city,
-        }
+        if self.request.user.is_authenticated:
+            user_data = UserInfo.objects.filter(user=request.user).first()
+            if user_data:
+                data = {
+                    'first_name': user_data.user.first_name,
+                    'last_name': user_data.user.last_name,
+                    'email': user_data.user.email,
+                    'phone_num': user_data.phone_num,
+                    'address': user_data.address,
+                    'street': user_data.street,
+                    'neighbourhood': user_data.neighbourhood,
+                    'city': user_data.city,
+                }
 
-        # Initialize the serializer with the data
-        serializer = UserInfoSerializer(data=data)
-        if serializer.is_valid():
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response([], status=status.HTTP_204_NO_CONTENT)
+                # Initialize the serializer with the data
+                serializer = UserInfoSerializer(data=data)
+                if serializer.is_valid():
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response([], status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, *args, **kwargs):
         cart_items = self.get_queryset_by_user(self.request)
-        serializer = self.get_serializer(data=self.request.data)
+        try:
+            serializer = self.get_serializer(data=self.request.data)
+            # Your remaining code here...
+        except ParseError as e:
+            print("ParseError:", e)
+            return Response({"error": "Failed to parse request data"}, status=status.HTTP_400_BAD_REQUEST)
         # If the cart is non-empty this is run
-        if cart_items:
+
+        if len(cart_items) != 0:
             if serializer.is_valid():
                 # Incrementing the n_bought of the product attribute of the item by the qunatity bought
                 for item in cart_items:
@@ -212,7 +222,7 @@ class BuyerCheckoutView(AuthenticationMixin, generics.GenericAPIView, QuerySetFo
                 return Response({"error": "User Data in invalid format please follow the required format"},
                                 status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"message": "Cart is empty"}, status.HTTP_204_NO_CONTENT)
+            return Response({"message": "Cart is empty"}, status=status.HTTP_404_NOT_FOUND)
 
     @staticmethod
     def check_user_info_change(data, user_data: UserInfo):
@@ -226,7 +236,7 @@ class BuyerCheckoutView(AuthenticationMixin, generics.GenericAPIView, QuerySetFo
             user_data.user.last_name = data.get('last_name', user_data.user.last_name)
             user_data.user.email = data.get('email', user_data.user.email)
             user_data.user.save()
-        elif (
+        if (
                 data.get('phone_num') != user_data.phone_num or
                 data.get('address') != user_data.address or
                 data.get('neighbourhood') != user_data.neighbourhood or
@@ -238,7 +248,7 @@ class BuyerCheckoutView(AuthenticationMixin, generics.GenericAPIView, QuerySetFo
             user_data.city = data.get('city')
             user_data.neighbourhood = data.get('neighbourhood')
             user_data.street = data.get('street')
-            user_data.user.save()
+            user_data.save()
 
 
 class BuyerOrderHistory(AuthenticationMixin, BuyerPermissionMixin, generics.ListAPIView):
