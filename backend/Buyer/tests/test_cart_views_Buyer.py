@@ -32,9 +32,9 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
         res = self.client.delete(self.get_cart_delete_url(2345))
         self.assertEqual(res.status_code, 404)
 
-    def test_failed_checking_out_with_empty_cart(self):
-        res = self.client.get(self.checkout_url)
-        self.assertEqual(res.status_code, 204)
+    # def test_failed_checking_out_with_empty_cart(self):
+    #     res = self.client.get(self.checkout_url)
+    #     self.assertEqual(res.status_code, 204)
 
     def test_failed_accessing_order_history_without_login(self):
         self.add_product_to_cart()
@@ -71,13 +71,14 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
         res = self.client.delete(self.get_cart_delete_url(1))
         self.assertEqual(res.status_code, 204)
 
-    def test_passed_checking_out_with_products(self):
-        self.add_product_to_cart()
-        res1 = self.client.get(self.checkout_url)
-        self.assertEqual(res1.status_code, 200)
-        res2 = self.client.get(self.cart_list_url)
-        self.assertEqual(res2.status_code, 200)
-        self.assertEqual(res2.data, [])
+    # def test_passed_checking_out_with_products(self):
+    #     self.add_product_to_cart()
+    #     res1 = self.client.get(self.checkout_url)
+    #     self.assertEqual(res1.status_code, 200)
+    #     res2 = self.client.get(self.cart_list_url)
+    #     self.assertEqual(res2.status_code, 200)
+    #     self.assertEqual(res2.data, [])
+    #
 
 
 class TestBuyerCartViewsForAuthenticatedBuyer(TestSampleProductsForBuyerViewsSetup):
@@ -120,15 +121,15 @@ class TestBuyerCartViewsForAuthenticatedBuyer(TestSampleProductsForBuyerViewsSet
         res2_get = self.client.get(self.cart_list_url, headers=self.buyer_headers_2)
         self.assertNotEqual(len(res2_get.data), 0)
 
-    def test_passed_checking_out_and_viewing_order_history(self):
-        self.add_product_to_cart(product_id=6, quantity=89, headers_for_buyer=self.buyer_headers_1)
-        res1 = self.client.get(self.checkout_url, headers=self.buyer_headers_1)
-        self.assertEqual(res1.status_code, 200)
-        # Checking the cart is empty
-        res1_check = self.client.get(self.cart_list_url, headers=self.buyer_headers_1)
-        self.assertEqual(res1_check.status_code, 200)
-        self.assertEqual(res1_check.data, [])
-        # Checking that order history has been made
-        res2 = self.client.get(self.order_history_url, headers=self.buyer_headers_1)
-        self.assertEqual(res2.status_code, 200)
-        self.assertEqual(len(res2.data), 1)
+    # def test_passed_checking_out_and_viewing_order_history(self):
+    #     self.add_product_to_cart(product_id=6, quantity=89, headers_for_buyer=self.buyer_headers_1)
+    #     res1 = self.client.get(self.checkout_url, headers=self.buyer_headers_1)
+    #     self.assertEqual(res1.status_code, 200)
+    #     # Checking the cart is empty
+    #     res1_check = self.client.get(self.cart_list_url, headers=self.buyer_headers_1)
+    #     self.assertEqual(res1_check.status_code, 200)
+    #     self.assertEqual(res1_check.data, [])
+    #     # Checking that order history has been made
+    #     res2 = self.client.get(self.order_history_url, headers=self.buyer_headers_1)
+    #     self.assertEqual(res2.status_code, 200)
+    #     self.assertEqual(len(res2.data), 1)

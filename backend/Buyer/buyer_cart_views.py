@@ -149,6 +149,25 @@ class BuyerCheckoutView(AuthenticationMixin, generics.GenericAPIView, QuerySetFo
     '''
     serializer_class = UserInfoSerializer
 
+    def get(self, request):
+        user_data = UserInfo.objects.filter(user=request.user).first()
+        data = {
+            'first_name': user_data.user.first_name,
+            'last_name': user_data.user.last_name,
+            'email': user_data.user.email,
+            'phone_num': user_data.phone_num,
+            'address': user_data.address,
+            'street': user_data.street,
+            'neighbourhood': user_data.neighbourhood,
+            'city': user_data.city,
+        }
+
+        # Initialize the serializer with the data
+        serializer = UserInfoSerializer(data=data)
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response([], status=status.HTTP_204_NO_CONTENT)
+
     def post(self, request, *args, **kwargs):
         cart_items = self.get_queryset_by_user(self.request)
         serializer = self.get_serializer(data=self.request.data)
@@ -184,7 +203,6 @@ class BuyerCheckoutView(AuthenticationMixin, generics.GenericAPIView, QuerySetFo
                                 neighbourhood=serializer.validated_data['neighbourhood']
                             )
                         BuyerCheckoutView.check_user_info_change(serializer.validated_data, user_data)
-
 
                     else:
                         # If the user is not authenticated, clear the cart from the session
