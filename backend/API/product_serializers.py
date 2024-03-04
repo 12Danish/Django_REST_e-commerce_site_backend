@@ -1,6 +1,6 @@
 from rest_framework.fields import DateTimeField
 from rest_framework.utils.serializer_helpers import ReturnDict
-
+from django.conf import settings
 from .models import Product
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -18,6 +18,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     detail_url = serializers.SerializerMethodField(read_only=True)
     id = serializers.PrimaryKeyRelatedField(read_only=True)
     date_created = serializers.SerializerMethodField(read_only=True)
+    image = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Product
@@ -35,8 +36,15 @@ class ProductListSerializer(serializers.ModelSerializer):
         ]
 
     @staticmethod
-    def get_date_created(obj:Product):
+    def get_date_created(obj: Product):
         return ProductDetailSerializer.get_date_created(obj)
+
+    @staticmethod
+    def get_image(obj: Product):
+        if obj.image:
+            return settings.MEDIA_ROOT + obj.image.url
+        else:
+            return None
 
     # Getting the url based on the user who is logged in
     def get_detail_url(self, obj: Product) -> reverse:
@@ -61,6 +69,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     reviews = serializers.SerializerMethodField(read_only=True)
     seller = PublicUserSerializer(source="owner", read_only=True)
     date_created = serializers.SerializerMethodField(read_only=True)
+    image = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Product
@@ -82,6 +91,9 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_date_created(obj: Product) -> DateTimeField:
         return obj.date_created.strftime("%Y-%m-%d")
+
+    def get_image(self, obj):
+        return ProductListSerializer.get_image(obj)
 
     @staticmethod
     def get_reviews(obj: Product) -> ReturnDict:

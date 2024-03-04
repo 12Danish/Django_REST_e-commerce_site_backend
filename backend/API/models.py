@@ -55,8 +55,7 @@ class Product(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
     title = models.CharField(max_length=200, default="Title")
     category = models.CharField(max_length=200, default="other")
-    image = models.ImageField(upload_to="",
-                              default="C:/Users/Sheryar/PycharmProjects/construction_site/frontend/src/assets/images/sample_product.jpg")
+    image = models.ImageField(upload_to="",blank=True)
     description = models.TextField(blank=True, null=True)
     price = models.DecimalField(decimal_places=2, max_digits=8)
     n_bought = models.PositiveIntegerField(default=0)

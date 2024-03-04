@@ -1,5 +1,7 @@
 from django.db.models import PositiveIntegerField
 from rest_framework import serializers
+
+import API.product_serializers
 from .models import OrderHistory, Cart
 
 
@@ -34,6 +36,7 @@ class BuyerCartListSerializer(serializers.Serializer):
 
 class BuyerOrderHistorySerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField(read_only=True)
+    product_image = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = OrderHistory
@@ -52,3 +55,6 @@ class BuyerOrderHistorySerializer(serializers.ModelSerializer):
         if obj.product_discount and obj.product_price is not None:
             return obj.product_price - (obj.product_price * (obj.product_discount / 100))
         return obj.product_price
+
+    def get_product_image(self, obj):
+        return API.product_serializers.ProductListSerializer.get_image(obj)
