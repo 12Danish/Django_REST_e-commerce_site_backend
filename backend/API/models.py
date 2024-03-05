@@ -29,6 +29,9 @@ class ProductQuerySet(models.QuerySet):
     def category(self, category):
         return self.filter(category=category)
 
+    def sale_items(self):
+        return self.filter(discount__gt=0)
+
 
 class ProductManager(models.Manager):
     def get_queryset(self):
@@ -46,6 +49,9 @@ class ProductManager(models.Manager):
     def category(self, category):
         return self.get_queryset().category(category)
 
+    def sale_items(self):
+        return self.get_queryset().sale_items()
+
 
 # This is the model for all of my products
 class Product(models.Model):
@@ -55,7 +61,7 @@ class Product(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
     title = models.CharField(max_length=200, default="Title")
     category = models.CharField(max_length=200, default="other")
-    image = models.ImageField(upload_to="",blank=True)
+    image = models.ImageField(upload_to="", blank=True)
     description = models.TextField(blank=True, null=True)
     price = models.DecimalField(decimal_places=2, max_digits=8)
     n_bought = models.PositiveIntegerField(default=0)

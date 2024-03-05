@@ -36,6 +36,11 @@ class TestBuyerProductViews(TestSampleProductsForBuyerViewsSetup):
         for product_data in res.data:
             self.assertIn('s', product_data['title'].lower())
 
+    def test_successful_displaying_sale_items(self):
+        res = self.client.get(self.product_list_url + "?sale=True")
+        self.assertEqual(res.status_code, 200)
+        self.assertNotEqual(res.data, [])
+
     def test_successful_retrieving_product(self):
         res = self.client.get(self.get_product_details_url(self.product_ids[0]))
         self.assertEqual(res.status_code, 200)

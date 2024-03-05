@@ -30,6 +30,7 @@ class BuyerProductListView(generics.ListAPIView):
         category = self.request.query_params.get('category')
         search = self.request.query_params.get('search')
         popular = self.request.query_params.get('popular')
+        sale = self.request.query_params.get('sale')
         logger.debug(f'Initial queryset: {qs}')
         # If user has specified the category then getting only the items of that category
         if category:
@@ -38,6 +39,8 @@ class BuyerProductListView(generics.ListAPIView):
             qs = Product.objects.search(search, self.request.user)
         elif popular:
             qs = Product.objects.popular()
+        elif sale:
+            qs = Product.objects.sale_items()
 
         return qs
 

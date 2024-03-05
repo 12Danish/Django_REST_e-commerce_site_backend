@@ -3,7 +3,7 @@
     I have to write tests for authenticated buyer -- Done
     I have to write tests in Seller for retrieving data -- Done
     I have to write code for sending emails Second
-    I have to fix the image url problem
+    I have to fix the image url problem -- Temporarily Done
     I have to create another model to store users data - Done
     I have to use celery to schedule db session cleanups
     I have to find a way to handle log out logic

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import PositiveIntegerField
 from rest_framework import serializers
 
@@ -57,4 +58,7 @@ class BuyerOrderHistorySerializer(serializers.ModelSerializer):
         return obj.product_price
 
     def get_product_image(self, obj):
-        return API.product_serializers.ProductListSerializer.get_image(obj)
+        if obj.product_image:
+            return settings.MEDIA_ROOT + obj.product_image.url
+        else:
+            return None
