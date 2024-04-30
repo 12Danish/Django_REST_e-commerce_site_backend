@@ -46,22 +46,23 @@ class BuyerProductListView(generics.ListAPIView):
             qs = Product.objects.sale_items()
 
         qs = self.product_specifications(qs)
-
         return qs
 
-    def product_specifications(self,qs):
+    def product_specifications(self, qs):
         order_by = self.request.query_params.get('order_by')
         order = self.request.query_params.get('order')
         filter_type = self.request.query_params.get('filter_type')
         filter_amount = self.request.query_params.get('filter_amount')
 
         if filter_type and filter_amount:
-            qs.price_filter(filter_type, filter_amount)
+            qs = qs.price_filter(filter_type, filter_amount)
 
-        if order_by == 'sale_price':
-            qs.order_by_price(order)
-        elif order_by == "date":
-            qs.order_by_date(order)
+        if order_by and order_by.lower() == 'price':
+            logger.info("Attempting to order by price")
+
+            qs = qs.order_by_price(order)
+        elif order_by and order_by.lower() == "date":
+            qs = qs.order_by_date(order)
 
         return qs
 

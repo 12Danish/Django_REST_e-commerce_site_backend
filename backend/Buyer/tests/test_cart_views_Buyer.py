@@ -79,6 +79,7 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
         self.add_product_to_cart()
         res1 = self.client.post(self.checkout_url, headers=self.content_header, data=self.checkout_data, format="json")
         logger.info(res1.data)
+
         self.assertEqual(res1.status_code, 200)
         res2 = self.client.get(self.cart_list_url)
         self.assertEqual(res2.status_code, 200)

@@ -88,13 +88,13 @@ class TestBuyerProductViews(TestSampleProductsForBuyerViewsSetup):
         # Check if the response status code is 200 (OK)
         self.assertEqual(res.status_code, 200)
 
-
         # Check if the products are ordered by price in ascending order
         ordered_products = res.data['results']
         prices = [product['price'] for product in ordered_products]
 
         # Confirm that prices are in ascending order
-        self.assertEqual(prices, sorted(prices))
+        for index in range(len(prices) - 1):
+            self.assertLessEqual(float(prices[index]), float(prices[index + 1]))
 
     def test_successful_ordering_products_by_descending_price(self):
         # Send a GET request to the product list URL with order_by and order parameters for descending price
@@ -102,15 +102,26 @@ class TestBuyerProductViews(TestSampleProductsForBuyerViewsSetup):
 
         # Check if the response status code is 200 (OK)
         self.assertEqual(res.status_code, 200)
-
-
-
         # Check if the products are ordered by price in descending order
         ordered_products = res.data['results']
         prices = [product['price'] for product in ordered_products]
 
-        # Confirm that prices are in descending order
-        self.assertEqual(prices, sorted(prices, reverse=True))
+
+        # Confirm that prices are in ascending order
+        for index in range(len(prices) - 1):
+            self.assertGreaterEqual(float(prices[index]), float(prices[index + 1]))
+
+
+    def test_successful_filtering_products_on_price(self):
+        res = self.client.get(self.product_list_url + "?filter_type=gte&filter_amount=1000")
+        self.assertEqual(res.status_code, 200)
+
+        # Check if the products are ordered by price in ascending order
+        ordered_products = res.data['results']
+        prices = [product['price'] for product in ordered_products]
+        for price in prices:
+            self.assertGreaterEqual(float(price), 1000.00)
+
 
     def test_successful_retrieving_product(self):
         res = self.client.get(self.get_product_details_url(self.product_ids[0]))
