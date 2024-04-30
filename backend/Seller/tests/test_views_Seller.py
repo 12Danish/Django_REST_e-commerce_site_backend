@@ -151,7 +151,7 @@ class TestSellerListView(TestSetupSellerViews):
     def test_empty_set_returned_with_no_published_products(self):
         res = self.client.get(self.seller_homepage_url, headers=self.seller_headers_1)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.data, [])
+        self.assertEqual(res.data['results'], [])
 
     def test_empty_set_returned_for_no_published_products_even_with_other_sellers_with_products(self):
         self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=self.product_data1,
@@ -159,7 +159,7 @@ class TestSellerListView(TestSetupSellerViews):
 
         res = self.client.get(self.seller_homepage_url, headers=self.seller_headers_2)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.data, [])
+        self.assertEqual(res.data['results'], [])
 
     def test_relevant_data_returned_only(self):
         self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=self.product_data1,
@@ -171,11 +171,11 @@ class TestSellerListView(TestSetupSellerViews):
         res1 = self.client.get(self.seller_homepage_url, headers=self.seller_headers_1)
         self.assertEqual(res1.status_code, 200)
         self.assertIsNotNone(self.product_data1['title'])
-        self.assertEqual(self.product_data1['title'], res1.data[0]['title'])
+        self.assertEqual(self.product_data1['title'], res1.data['results'][0]['title'])
         res2 = self.client.get(self.seller_homepage_url, headers=self.seller_headers_2)
         self.assertEqual(res2.status_code, 200)
 
-        self.assertEqual(self.product_data2['title'], res2.data[0]['title'])
+        self.assertEqual(self.product_data2['title'], res2.data['results'][0]['title'])
 
     def test_specified_data_returned_only(self):
         self.client.post(self.seller_create_product_url, headers=self.seller_headers_1, data=self.product_data1,
@@ -185,7 +185,7 @@ class TestSellerListView(TestSetupSellerViews):
 
         res = self.client.get(self.seller_homepage_url + "?search=a", headers=self.seller_headers_1)
         logger.info(res.data)
-        for product_data in res.data:
+        for product_data in res.data['results']:
             self.assertIn('a', product_data['title'].lower())
 
 

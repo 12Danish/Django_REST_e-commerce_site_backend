@@ -1,8 +1,12 @@
+import pdb
+
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta
+
+from django.db.models.functions import Coalesce
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, Case, When, F, DecimalField, Value
 import logging
 
 # Configuring the django logging to log even the basic things
@@ -13,8 +17,67 @@ logger = logging.getLogger(__name__)
 def one_month_ago():
     return timezone.now() - timedelta(days=30)
 
+class ProductListSpecifications:
 
-class ProductQuerySet(models.QuerySet):
+    def order_by_date(self, order='asc'):
+
+        if order == 'asc':
+            return self.order_by("date_created")
+        elif order == 'desc':
+            return self.order_by("-date_created")
+        else:
+            raise ValueError("Invalid order parameter. Use 'asc' or 'desc'.")
+    # This method is ordering by the price
+
+
+class ProductQuerySet(models.QuerySet,ProductListSpecifications):
+
+
+    def order_by_date(self, order='asc'):
+
+        if order == 'asc':
+            return self.order_by("date_created")
+        elif order == 'desc':
+            return self.order_by("-date_created")
+        else:
+            raise ValueError("Invalid order parameter. Use 'asc' or 'desc'.")
+    # This method is ordering by the price
+    def order_by_sale_price(self, order='asc'):
+        # Annotate the queryset with the sale_price property
+        annotated_qs = self.annotate_sale_price()
+
+        # Use Coalesce to handle NULL values if necessary
+        annotated_qs = annotated_qs.annotate(
+            sale_price_coalesced=Coalesce('sale_price', Value(0))
+        )
+
+        # Perform ordering based on the annotated sale_price
+        if order.lower() == 'asc':
+            return self.order_by("price").asc()
+        elif order.lower() == 'desc':
+            return self.order_by("price").desc()
+        else:
+            raise ValueError("Invalid order parameter. Use 'asc' or 'desc'.")
+
+    # This method is used to filter out the data according to the price
+
+    def price_filter(self, filter_type, filter_amount):
+        if filter_type.lower() == "gte":
+            return self.filter(price__gte=filter_amount)
+
+        if filter_type.lower() == "lte":
+            return self.filter(price__lte=filter_amount)
+
+
+    # This method is being used to add extra fields to the queryset object
+    def annotate_sale_price(self):
+        return self.annotate(
+            sale_price=Case(
+                When(discount__gt=0, then=F('price') - (F('price') * F('discount') / 100)),
+                default=F('price'),
+                output_field=DecimalField(),
+            )
+        )
     def latest(self):
         logger.info("Request received  in qs latest")
         return self.filter(date_created__gte=one_month_ago())
@@ -31,6 +94,8 @@ class ProductQuerySet(models.QuerySet):
 
     def sale_items(self):
         return self.filter(discount__gt=0)
+
+
 
 
 class ProductManager(models.Manager):
@@ -51,6 +116,12 @@ class ProductManager(models.Manager):
 
     def sale_items(self):
         return self.get_queryset().sale_items()
+
+    def order_by_date(self, order='asc'):
+        return self.get_queryset().order_by_date(order)
+
+    def order_by_price(self, order='asc'):
+        return self.get_queryset().order_by_price(order)
 
 
 # This is the model for all of my products
@@ -85,7 +156,7 @@ class Product(models.Model):
 
     # Representation for model Instances
     def __str__(self):
-        return f'{self.title} : {self.owner}'
+        return f'{self.title} : {self.owner} :{self.sale_price}'
 
 
 # This is the model which will have all the reviews of different products by different users

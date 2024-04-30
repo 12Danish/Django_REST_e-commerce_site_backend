@@ -1,3 +1,5 @@
+import pdb
+
 from rest_framework import generics
 from API.product_serializers import ProductListSerializer, ProductDetailSerializer
 from API.mixins import BuyerPermissionMixin
@@ -24,13 +26,14 @@ class BuyerProductListView(generics.ListAPIView):
 
     # This will define the queryset for the display for the buyer
     def get_queryset(self):
-        # Getting all the objects from the
+        # Getting all the latest objects from the db
         qs = Product.objects.latest()
         # Checking if a category has been defined by the user in the params
         category = self.request.query_params.get('category')
         search = self.request.query_params.get('search')
         popular = self.request.query_params.get('popular')
         sale = self.request.query_params.get('sale')
+
         logger.debug(f'Initial queryset: {qs}')
         # If user has specified the category then getting only the items of that category
         if category:
@@ -41,6 +44,24 @@ class BuyerProductListView(generics.ListAPIView):
             qs = Product.objects.popular()
         elif sale:
             qs = Product.objects.sale_items()
+
+        qs = self.product_specifications(qs)
+
+        return qs
+
+    def product_specifications(self,qs):
+        order_by = self.request.query_params.get('order_by')
+        order = self.request.query_params.get('order')
+        filter_type = self.request.query_params.get('filter_type')
+        filter_amount = self.request.query_params.get('filter_amount')
+
+        if filter_type and filter_amount:
+            qs.price_filter(filter_type, filter_amount)
+
+        if order_by == 'sale_price':
+            qs.order_by_price(order)
+        elif order_by == "date":
+            qs.order_by_date(order)
 
         return qs
 

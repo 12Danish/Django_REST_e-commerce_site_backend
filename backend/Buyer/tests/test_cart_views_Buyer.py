@@ -1,4 +1,4 @@
-
+import pdb
 
 from .test_setup_Buyer import TestSampleProductsForBuyerViewsSetup
 from django.test import Client
@@ -49,14 +49,14 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
     def test_passed_retrieving_empty_cart_for_no_added_product(self):
         res = self.client.get(self.cart_list_url)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.data, [])
+        self.assertEqual(res.data['results'], [])
 
     def test_passed_retrieving_products(self):
         self.add_product_to_cart()
         res = self.client.get(self.cart_list_url)
         self.assertEqual(res.status_code, 200)
         logger.info(res.data)
-        self.assertEqual(len(res.data), 1)
+        self.assertEqual(len(res.data['results']), 1)
 
     def test_passed_updating_existent_product(self):
         self.add_product_to_cart()
@@ -72,6 +72,7 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
     def test_passed_empty_set_returned_for_unregistered_user_sending_get_req_to_checkout(self):
         res = self.client.get(self.checkout_url)
         self.assertEqual(res.status_code, 404)
+
         self.assertEqual(res.data, [])
 
     def test_passed_checking_out_with_products(self):
@@ -81,7 +82,7 @@ class TestBuyerCartViewsForUnauthenticatedBuyer(TestSampleProductsForBuyerViewsS
         self.assertEqual(res1.status_code, 200)
         res2 = self.client.get(self.cart_list_url)
         self.assertEqual(res2.status_code, 200)
-        self.assertEqual(res2.data, [])
+        self.assertEqual(res2.data['results'], [])
 
 
 class TestBuyerCartViewsForAuthenticatedBuyer(TestSampleProductsForBuyerViewsSetup):
@@ -98,9 +99,9 @@ class TestBuyerCartViewsForAuthenticatedBuyer(TestSampleProductsForBuyerViewsSet
         res2 = self.client.get(self.cart_list_url, headers=self.buyer_headers_2)
         logger.info(f"This is the second buyer {res2.data}")
         self.assertEqual(res1.status_code, 200)
-        self.assertEqual(89, res1.data[0]['quantity'])
+        self.assertEqual(res1.data['results'][0]['quantity'], 89)
         self.assertEqual(res2.status_code, 200)
-        self.assertEqual(7, res2.data[0]['quantity'])
+        self.assertEqual(res2.data['results'][0]['quantity'], 7)
 
     def test_passed_updating_products(self):
         self.add_product_to_cart(product_id=6, quantity=89, headers_for_buyer=self.buyer_headers_1)
@@ -114,9 +115,9 @@ class TestBuyerCartViewsForAuthenticatedBuyer(TestSampleProductsForBuyerViewsSet
         res1_del = self.client.delete(self.get_cart_delete_url(1), headers=self.buyer_headers_1)
         self.assertEqual(res1_del.status_code, 204)
         res1_get = self.client.get(self.cart_list_url, headers=self.buyer_headers_1)
-        self.assertEqual(len(res1_get.data), 0)
+        self.assertEqual(len(res1_get.data['results']), 0)
         res2_get = self.client.get(self.cart_list_url, headers=self.buyer_headers_2)
-        self.assertNotEqual(len(res2_get.data), 0)
+        self.assertNotEqual(len(res2_get.data['results']), 0)
 
 
 class TestCheckoutFunctionalityForAuthenticatedBuyer(TestSampleProductsForBuyerViewsSetup):
@@ -132,11 +133,11 @@ class TestCheckoutFunctionalityForAuthenticatedBuyer(TestSampleProductsForBuyerV
         # Checking the cart is empty
 
         self.assertEqual(self.res1_check.status_code, 200)
-        self.assertEqual(self.res1_check.data, [])
+        self.assertEqual(self.res1_check.data['results'], [])
         # Checking that order history has been made
         order_his_res = self.client.get(self.order_history_url, headers=self.buyer_headers_1)
         self.assertEqual(order_his_res.status_code, 200)
-        self.assertEqual(len(order_his_res.data), 1)
+        self.assertEqual(len(order_his_res.data['results']), 1)
 
     def test_passed_retrieving_user_info_using_get(self):
         res_get = self.client.get(self.checkout_url, headers=self.buyer_headers_1)

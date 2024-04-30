@@ -15,31 +15,102 @@ class TestBuyerProductViews(TestSampleProductsForBuyerViewsSetup):
     def test_successful_displaying_latest_products(self):
         res = self.client.get(self.product_list_url)
         logger.info(res.data)
-        for product_data in res.data:
+        for product_data in res.data['results']:
             date_created = datetime.strptime(product_data['date_created'], "%Y-%m-%d").replace(tzinfo=timezone.utc)
             self.assertGreaterEqual(date_created, one_month_ago())
 
     def test_successful_displaying_popular_products(self):
         res = self.client.get(self.product_list_url + "?popular=True")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.data, [])
+        self.assertEqual(res.data['results'], [])
 
     def test_successful_displaying_category_wise_products(self):
         res = self.client.get(self.product_list_url + "?category=test_category")
         logger.info(res.data)
-        for product_data in res.data:
+        for product_data in res.data['results']:
             self.assertEqual(product_data['category'], "test_category")
 
     def test_successful_displaying_searched_products(self):
         res = self.client.get(self.product_list_url + "?search=s")
         logger.info(res.data)
-        for product_data in res.data:
+        for product_data in res.data['results']:
             self.assertIn('s', product_data['title'].lower())
 
     def test_successful_displaying_sale_items(self):
         res = self.client.get(self.product_list_url + "?sale=True")
         self.assertEqual(res.status_code, 200)
         self.assertNotEqual(res.data, [])
+
+    def test_successful_ordering_products_by_date_in_ascending_order(self):
+        # Send a GET request to the product list URL with order_by and order parameters
+        res = self.client.get(self.product_list_url + "?order_by=date&order=asc")
+
+        # Check if the response status code is 200 (OK)
+        self.assertEqual(res.status_code, 200)
+
+        # Log the data returned in the response
+        logging.info(f"Response data: {res.data}")
+
+        # Check if the products are ordered by date in ascending order
+        ordered_products = res.data['results']
+        dates = [product['date_created'] for product in ordered_products]
+
+        # Convert date strings to datetime objects for comparison
+        dates_as_datetime = [datetime.strptime(date, '%Y-%m-%d') for date in dates]
+
+        # Confirm that dates are in ascending order
+        self.assertEqual(dates_as_datetime, sorted(dates_as_datetime))
+
+    def test_successful_ordering_products_by_date_in_descending_order(self):
+        # Send a GET request to the product list URL with order_by and order parameters for descending order
+        res = self.client.get(self.product_list_url + "?order_by=date&order=desc")
+
+        # Check if the response status code is 200 (OK)
+        self.assertEqual(res.status_code, 200)
+
+        # Log the data returned in the response
+        logging.info(f"Response data: {res.data}")
+
+        # Check if the products are ordered by date in descending order
+        ordered_products = res.data['results']
+        dates = [product['date_created'] for product in ordered_products]
+
+        # Convert date strings to datetime objects for comparison
+        dates_as_datetime = [datetime.strptime(date, '%Y-%m-%d') for date in dates]
+
+        # Confirm that dates are in descending order
+        self.assertEqual(dates_as_datetime, sorted(dates_as_datetime, reverse=True))
+
+    def test_successful_ordering_products_by_ascending_price(self):
+        # Send a GET request to the product list URL with order_by and order parameters for ascending price
+        res = self.client.get(self.product_list_url + "?order_by=price&order=asc")
+
+        # Check if the response status code is 200 (OK)
+        self.assertEqual(res.status_code, 200)
+
+
+        # Check if the products are ordered by price in ascending order
+        ordered_products = res.data['results']
+        prices = [product['price'] for product in ordered_products]
+
+        # Confirm that prices are in ascending order
+        self.assertEqual(prices, sorted(prices))
+
+    def test_successful_ordering_products_by_descending_price(self):
+        # Send a GET request to the product list URL with order_by and order parameters for descending price
+        res = self.client.get(self.product_list_url + "?order_by=price&order=desc")
+
+        # Check if the response status code is 200 (OK)
+        self.assertEqual(res.status_code, 200)
+
+
+
+        # Check if the products are ordered by price in descending order
+        ordered_products = res.data['results']
+        prices = [product['price'] for product in ordered_products]
+
+        # Confirm that prices are in descending order
+        self.assertEqual(prices, sorted(prices, reverse=True))
 
     def test_successful_retrieving_product(self):
         res = self.client.get(self.get_product_details_url(self.product_ids[0]))
